@@ -1,0 +1,22 @@
+The project will use a MySQL database hosted on Google Cloud Platform and using Cloud SQL
+Create Google Cloud account.
+From there, navigate to the Xerxes project console and go to the Cloud SQL dashboard.
+
+Fill out the fields and keep track of the <Master Username> and <Master Password>, they will be needed to access the DB later.
+Once filled, launch and wait a couple of minutes for the DB to be created.
+
+Then, click on the instance and edit it to append your address to the network list.
+GCP is configured where the app can access it directly, but for initial configuration and testing, we will need to whitelist ourselves.
+
+Then you will have to open port 3306, and the method will vary based on your OS.
+Do that, and in the meantime download MySQL Workbench: https://www.mysql.com/products/workbench/
+
+Finally add a connection/management for the Cloud SQL DB in MySQL Workbench.
+
+Hostname = The Instance's Endpoint
+Username = Master Username
+Password = Master Password
+
+Then you can configure the instance just like a local DB. (Add tables, columns, data, other configuration, etc.)
+
+For the Python code, it will be Python 3 and the library being used for DB work is PyMySQL, imported as pymysql, which you will have to install.
