@@ -2,13 +2,61 @@
 import pymysql
 import time
 import socket
+import hashlib
+import base64
+import uuid
 
-def getHostName(IPAddress):
-    try:
-        name = socket.gethostbyaddr(IPAddress)[0] # function returns a triple, gets the name from first element
-    except:
-        name = "DNS Failed to Resolve"
-    return  name
+def map_port_service(port_number):
+    # Dictionary of Port Numbers and their Services
+    portDict = {1 : 'TCPMUX',
+                5 : 'RJE',
+                7 : 'ECHO',
+                18 : 'MSP',
+                20 : 'FTP-Data',
+                21 : 'FTP-Control',
+                22 : 'SSH',
+                23 : 'Telnet',
+                25 : 'SMTP',
+                29 : 'MSG ICP',
+                37 : 'Time',
+                42 : 'Nameserv',
+                43 : 'WhoIs',
+                49 : 'Login',
+                53 : 'DNS',
+                69 : 'TFTP',
+                80 : 'HTTP',
+                109 : 'POP2',
+                110 : 'POP3',
+                115 : 'SFTP',
+                118 : 'SQL Services',
+                119 : 'NNTP',
+                137 : 'NetBIOS Name',
+                139 : 'NetBIOS Datagram',
+                143 : 'IMAP',
+                150 : 'NetBIOS Session',
+                156 : 'SQL Server',
+                161 : 'SNMP',
+                179 : 'BGP',
+                190 : 'GACP',
+                194 : 'IRC',
+                197 : 'DLS',
+                389 : 'LDAP',
+                396 : 'Novell Netware',
+                443 : 'HTTPS',
+                444 : 'SNPP',
+                445 : 'Microsoft-DS',
+                458 : 'Apple QuickTime',
+                546 : 'DHCP Client',
+                547 : 'DHCP Server'}
+    return portDict.get(port_number, "")
+
+# def getHostName(IPAddress):
+#     try:
+#         name = socket.gethostbyaddr(IPAddress)[0] # function returns a triple, gets the name from first element
+#     except:
+#         name = "DNS Failed to Resolve"
+#     return  name
+
 # Most generic version
 def retrieveTableEntry(db, tableName, tableField, filterField, filterValue):
     cursor = db.cursor()
@@ -31,6 +79,7 @@ def retrieveTableEntry(db, tableName, tableField, filterField, filterValue):
 
     for row in data:
         print(row)
+
 
 # Basic insert, expects column values to be strings.
 def insertSiteEntry(db, ipAddress, hostName, ipVersion, region, openPorts, responses, contents, cms, score, scanDate):
