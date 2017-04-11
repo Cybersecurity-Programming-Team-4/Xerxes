@@ -5,6 +5,7 @@ import bs4
 import re
 import mmap
 
+
 # function to send a GET request to a specified url                                                     
 def webGet(url):
     webpage = requests.get(url)             # Sets a GET request to the specified url and assigns the result to webpage
@@ -32,17 +33,63 @@ def formattedHTML(filename, formattedFilename):
     formattedFile.close()
 
 # Parses select html contents using Regular Expression
-def parseHTML(filename, searchWord, numWordsBefore, numWordsAfter):
+def find_WordPress_Indicators(filename, searchWord):
     print('***Searching in {} for the keyword {}***'.format(filename, searchWord))  # Indicate what the function is searching for in what file
-    file = open(filename, 'r+')             
-    data = mmap.mmap(file.fileno(), 0)      # Make a memory mapped file object of the file
-    regexString = "(\\S+\\s+)"              # Initial regex string which will be a series of characters followed by a space 
-    regexString = regexString + "{" + str(numWordsBefore) + "}"             # convert the number of words to a string so it can be added to the regexString
-    regexString = regexString + "\\b" + searchWord + "\\b" + "(\\S+\\s+)"   # Look for the searchword where it is the middle of the matches
-    regexString = regexString + "{" + str(numWordsAfter) + "}"
+    file = open(filename, 'r+')
+    connect = True
+    found = False
+    site_name = "http://wordpress.org/"
+    try:
+        web_page = webGet(site_name)
+    except:
+        print("can't connect")
+        connect = False
+    if connect:
+        print(web_page.content)
+        data = mmap.mmap(file.fileno(), 0)      # Make a memory mapped file object of the file
+        if web_page.content.find(b'wp-content') != -1:
+            print("Found wp-content")
+        else:
+            #soup = bs4.BeautifulSoup("<meta name=\"generator\" content=\"WordPress 4.8-alpha-40416\" />", 'html.parser')
+            soup = bs4.BeautifulSoup(web_page.content, 'html.parser')
+            #print(soup.prettify('utf-8'))
+            #generator_tag = soup.find("meta", "generator")
+            #print(generator_tag)
+            for meta_tag in soup('meta'):
+                print(meta_tag)
+                try:
+                    if meta_tag["name"] == 'generator':
+                        print("found tag")
+                        print(meta_tag['content'])
+                        if 'wordpress' in meta_tag['content'].lower():
+                            print("Found wordpress tag")
+                            found = True
+                            break
+                except:
+                    print("no attr for that tag")
+            if not found:
+                admin_page_check = requests.get(site_name + "wp-admin")
+                print(site_name + "wp-admin")
+                if admin_page_check.status_code == 200:
+                    print("wp-admin page found")
+                    found = True
+                elif admin_page_check.status_code == 404:
+                    print("error: 404")
+                else:
+                    print("Other response")
+    if not found:
+        print("no wordpress indicators")
+        # for tag in soup.find_all("meta"):
+        #     print(tag)
+        # print(generator_tag)
+        #if generator_tag == "generator":
+         #   print("found generator")
+    #regexString = "(\\S+\\s+)"              # Initial regex string which will be a series of characters followed by a space
+    #regexString = regexString + searchWord + "(\\S+\\s+)"   # Look for the searchword where it is the middle of the matches
+    #re.search(regexString, data)
 
-    for match in re.finditer(regexString, data.read().decode('utf-8')):     # for every match found using the regexString
-        print('Start:{}, End: {}\n\n{}'.format(match.start(), match.end(), match.group()))  # Print out the start and ending position and the matching text
+    #for match in re.finditer(regexString, data.read().decode('utf-8')):     # for every match found using the regexString
+       #print('Start:{}, End: {}\n\n{}'.format(match.start(), match.end(), match.group()))  # Print out the start and ending position and the matching text
     file.close()
 
 # Prints out just the text portion of the file
@@ -65,7 +112,7 @@ def justLinks(filename):
 
 if __name__ == '__main__':  # to test whether the script is being run on its own, meaning the Python interpreter has assigned main to its name
 
-    parseHTML('wptest.html', 'wp-content', 4,4)
+    find_WordPress_Indicators('wptest.html', 'wp-content')
 
 
 else:

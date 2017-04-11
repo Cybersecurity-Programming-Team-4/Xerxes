@@ -22,6 +22,9 @@ def checkLogin(db, username, password):
     except:
         db.rollback()
         print("select failed on password")
+        # Security measure, still want password hash check to have similar response time
+        hashed_pass = hashlib.sha256(("BogusString" + "bogusSalt").encode('utf-8')).hexdigest()
+        return False
 
 
 
