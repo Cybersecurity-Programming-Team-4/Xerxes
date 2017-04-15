@@ -20,12 +20,13 @@ def check_for_CMS(IP_address):
     return 0
 
 if __name__ == "__main__":
-    with open("DatabaseInfo.txt") as f:
-        content = f.readlines()
-    # you may also want to remove whitespace characters like `\n` at the end of each line
-    content = [x.strip() for x in content]
-
-    db = pymysql.connect(content[0], content[1], content[2], content[3])
+    # with open("DatabaseInfo.txt") as f:
+    #     content = f.readlines()
+    # # you may also want to remove whitespace characters like `\n` at the end of each line
+    # content = [x.strip() for x in content]
+    #
+    # db = pymysql.connect(content[0], content[1], content[2], content[3])
+    db = connect_database()
 
     xmldoc = minidom.parse('parse_test.xml')
     prettyTree = xmldoc.toprettyxml()
@@ -38,6 +39,8 @@ if __name__ == "__main__":
     for host in hosts:
         portsList = host.getElementsByTagName('port')
         address = host.getElementsByTagName('address')[0].attributes['addr'].value
+        region = get_IP_geolocation(db, address)
+        print(region)
         name = ""
         responseStr = ""
         returnedName = getHostName(address)
@@ -50,7 +53,7 @@ if __name__ == "__main__":
             statesList = port.getElementsByTagName('state')
             for state in statesList:
                 responseStr = responseStr + state.attributes['reason'].value + ", "
-        insertSiteEntry(db, address, returnedName, addressType, "NULL", openPortsStr, responseStr, "TEST_INPUT", "NULL", 0, scanTimeStr)
+        #insertSiteEntry(db, address, returnedName, addressType, "NULL", openPortsStr, responseStr, "TEST_INPUT", "NULL", 0, scanTimeStr)
         print(openPortsStr)
         print(address)
         print(addressType)

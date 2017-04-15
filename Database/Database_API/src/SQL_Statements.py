@@ -5,6 +5,8 @@ import socket
 import hashlib
 import base64
 import uuid
+import struct
+import ipaddress
 
 def map_port_service(port_number):
     # Dictionary of Port Numbers and their Services
@@ -58,6 +60,34 @@ def map_port_service(port_number):
 #     return  name
 
 # Most generic version
+def connect_database():
+    with open("DatabaseInfo.txt") as f:
+        content = f.readlines()
+    # you may also want to remove whitespace characters like `\n` at the end of each line
+    content = [x.strip() for x in content]
+    return pymysql.connect(content[0], content[1], content[2], content[3])
+
+def get_IP_geolocation(db, IP_address):
+    cursor = db.cursor()
+    int_form = struct.unpack("!I", socket.inet_aton(IP_address))[0]
+    selectStatement = "SELECT COUNTRY FROM GEOIP_LOCATION_INFO AS B \
+    JOIN GEOIP_IP_BLOCKS AS A \
+    ON A.GEONAME_ID = B.GEONAME \
+    WHERE %s >= A.NETWORK_START AND %s <= A.NETWORK_END" % \
+    (int_form, int_form)
+
+    print("trying to get country of IP")
+    try:
+        cursor.execute(selectStatement)
+        db.commit()
+    except:
+        db.rollback()
+        print("select country failed")
+        return "NULL"
+    data = cursor.fetchall()
+    for row in data:
+        print(row)
+
 def retrieveTableEntry(db, tableName, tableField, filterField, filterValue):
     cursor = db.cursor()
     data = {}
