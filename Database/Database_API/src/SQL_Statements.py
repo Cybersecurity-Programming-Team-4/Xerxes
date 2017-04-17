@@ -1,12 +1,11 @@
 #!/usr/bin/python3
 import pymysql
-import time
 import socket
-import hashlib
-import base64
-import uuid
 import struct
-import ipaddress
+
+# def write_log(log_name, log_info):
+#     with open
+# To map well-known port to the expected service when listing results
 
 def map_port_service(port_number):
     # Dictionary of Port Numbers and their Services
@@ -52,14 +51,8 @@ def map_port_service(port_number):
                 547 : 'DHCP Server'}
     return portDict.get(port_number, "")
 
-# def getHostName(IPAddress):
-#     try:
-#         name = socket.gethostbyaddr(IPAddress)[0] # function returns a triple, gets the name from first element
-#     except:
-#         name = "DNS Failed to Resolve"
-#     return  name
-
-# Most generic version
+# Local connection to DB, grabbing credentials from local file
+# TODO have Google app connect without needing to call connect
 def connect_database():
     with open("DatabaseInfo.txt") as f:
         content = f.readlines()
@@ -67,14 +60,14 @@ def connect_database():
     content = [x.strip() for x in content]
     return pymysql.connect(content[0], content[1], content[2], content[3])
 
-def get_IP_geolocation(db, IP_address):
+def get_IP_region(db, IP_address):
     cursor = db.cursor()
     int_form = struct.unpack("!I", socket.inet_aton(IP_address))[0]
     selectStatement = "SELECT COUNTRY FROM GEOIP_LOCATION_INFO AS B \
     JOIN GEOIP_IP_BLOCKS AS A \
     ON A.GEONAME_ID = B.GEONAME \
     WHERE %s >= A.NETWORK_START AND %s <= A.NETWORK_END" % \
-    (int_form, int_form)
+                      (int_form, int_form)
 
     print("trying to get country of IP")
     try:
@@ -85,8 +78,27 @@ def get_IP_geolocation(db, IP_address):
         print("select country failed")
         return "NULL"
     data = cursor.fetchall()
-    for row in data:
-        print(row)
+
+    return data[0][0]   # Return the country name serving as the region
+
+def get_GEOIP_Info(db, IP_address, field):
+    cursor = db.cursor()
+    int_form = struct.unpack("!I", socket.inet_aton(IP_address))[0]
+    selectStatement = "SELECT * FROM GEOIP_LOCATION_INFO AS B \
+    JOIN GEOIP_IP_BLOCKS AS A \
+    ON A.GEONAME_ID = B.GEONAME \
+    WHERE %s >= A.NETWORK_START AND %s <= A.NETWORK_END" % \
+                      (int_form, int_form)
+
+    try:
+        cursor.execute(selectStatement)
+        db.commit()
+    except:
+        db.rollback()
+        return "NULL"
+    data = cursor.fetchall()
+
+    return data   # Return the country information as a dictionary
 
 def retrieveTableEntry(db, tableName, tableField, filterField, filterValue):
     cursor = db.cursor()
@@ -98,12 +110,9 @@ def retrieveTableEntry(db, tableName, tableField, filterField, filterValue):
     print("trying to select site info")
     print ("select statement = " + selectStatement)
     try:
-       # Execute the SQL command
         cursor.execute(selectStatement)
-       # Commit your changes in the database
         data = cursor.fetchall()
     except:
-       # Rollback in case there is any error
         db.rollback()
         print("select failed on site info")
 
@@ -113,48 +122,43 @@ def retrieveTableEntry(db, tableName, tableField, filterField, filterValue):
 
 # Basic insert, expects column values to be strings.
 def insertSiteEntry(db, ipAddress, hostName, ipVersion, region, openPorts, responses, contents, cms, score, scanDate):
-    # Connection to AWS MySQL DB: Endpoint, Username, Password, Database_name
     cursor = db.cursor()
     insertStatement = "INSERT INTO SITE_INFO(IP_ADDRESS, \
-    SITE_NAME, IP_VERSION, REGION, OPEN_PORTS, RESPONSES, \
+    SITE_NAME, IP_VERSION, COUNTRY, OPEN_PORTS, RESPONSES, \
     CONTENTS, CMS_TYPE, VULNERABILITY_SCORE, CHECKED_DATE) \
     VALUES ('%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s')" % \
-    (ipAddress, hostName, ipVersion, region, openPorts, responses, contents, cms, score, scanDate)
+                      (ipAddress, hostName, ipVersion, region, openPorts, responses, contents, cms, score, scanDate)
 
-    print("trying to insert site info")
     try:
-       # Execute the SQL command
-       cursor.execute(insertStatement)
-       # Commit your changes in the database
-       db.commit()
+        cursor.execute(insertStatement)
+        db.commit()
     except:
-       # Rollback in case there is any error
         db.rollback()
         print("insert failed")
-    #db.close()
+
+def updateSiteEntry(db, IP_address, field, new_value):
+    cursor=db.cursor()
+    update_statement = "UPDATE SITE_INFO SET %s = %s WHERE IP_ADDRESS = %s" % (IP_address, field, new_value)
+    try:
+        cursor.execute(update_statement)
+        db.commit()
+    except:
+        db.rollback()
+        print("Update failed")
 
 def retrieveSiteEntry(db, tableField, filterField, filterValue):
     cursor = db.cursor()
-    data = {}
-    selectStatement = ""
     if filterValue == "None":
         selectStatement = "SELECT %s FROM SITE_INFO" % (tableField)
     else:
         selectStatement = "SELECT %s FROM SITE_INFO WHERE %s = %s" % (tableField, filterField, filterValue)
-    print("trying to select site info")
-    print ("select statement = " + selectStatement)
     try:
-       # Execute the SQL command
         cursor.execute(selectStatement)
-       # Commit your changes in the database
         data = cursor.fetchall()
     except:
-       # Rollback in case there is any error
         db.rollback()
-        print("select failed on site info")
-
-    for row in data:
-        print(row)
+        return  "Site not found"
+    return data
 
 
 def insertOpenPort(db, siteIP, portNumber):
@@ -162,122 +166,86 @@ def insertOpenPort(db, siteIP, portNumber):
     cursor = db.cursor()
     insertStatement = "INSERT INTO SITE_OPEN_PORTS(IP_ADDRESS, PORT_NUMBER) \
     VALUES ('%s', '%s')" % \
-    (siteIP, int(portNumber))
+                      (siteIP, int(portNumber))
     print("trying to insert open port")
     try:
-       # Execute the SQL command
-       cursor.execute(insertStatement)
-       # Commit your changes in the database
-       db.commit()
+        # Execute the SQL command
+        cursor.execute(insertStatement)
+        # Commit your changes in the database
+        db.commit()
     except:
-       # Rollback in case there is any error
+        # Rollback in case there is any error
         db.rollback()
         print("insert failed on open port")
-    #db.close()
+        #db.close()
 
 def retrieveOpenPortsOnIP(db, siteIP):
     cursor = db.cursor()
     data = {}
-    selectStatement = "SELECT * FROM SITE_OPEN_PORTS WHERE SITE_IP = %s" % (siteIP)
-    print("trying to select open port")
     try:
-       # Execute the SQL command
-       cursor.execute("SELECT * FROM SITE_OPEN_PORTS WHERE SITE_IP = %s", siteIP)
-       # Commit your changes in the database
-       data = cursor.fetchall()
+        cursor.execute("SELECT * FROM SITE_OPEN_PORTS WHERE SITE_IP = %s", siteIP)
+        data = cursor.fetchall()
     except:
-       # Rollback in case there is any error
         db.rollback()
-        print("select failed on open port")
     for row in data:
         print(row)
 
-def retrievePlugins(db, pluginName, CMSName):
+def retrievePlugins(db, plugin_name, CMS_name):
     cursor = db.cursor()
     data = {}
-    selectStatement = "SELECT * FROM Vulnerable_Plugins WHERE PLUGIN_NAME = %s and CMS = %s" % (pluginName, CMSName)
-    print("trying to select open port")
+    selectStatement = "SELECT * FROM Vulnerable_Plugins WHERE CMS = %s and PLUGIN_NAME = %s" % (CMS_name, plugin_name)
     try:
-       # Execute the SQL command
-       cursor.execute(selectStatement)
-       # Commit your changes in the database
-       data = cursor.fetchall()
+        cursor.execute(selectStatement)
+        data = cursor.fetchall()
     except:
-       # Rollback in case there is any error
         db.rollback()
-        print("select failed on open port")
+        return "Database Error"
 
     if not data:
-        print("Plugin not found")
+        return "Plugin not found"
     else:
-        for row in data:
-            print(row)
+        return data
 
 
-def insertIntoScannedSites(db, scanID, siteIP):
+def insert_into_site_vulnerabilities(db, scanID, siteIP):
     cursor = db.cursor()
-    insertStatement = "INSERT INTO SCANNED_SITES (SCAN_IP, SITE_IP) \
+    # Where type is either a CVE Reference, CMS-related
+    # Description is the CVE ID, or if CMS-related, something such as accessible Admin Login Page
+    insertStatement = "INSERT INTO SITE_VULNERABILITIES (IP_ADDRESS, TYPE, DESCRIPTION) \
     VALUES ('%s', '%s')" % \
-    (int(scanID), siteIP)
+                      (int(scanID), siteIP)
     print("trying to insert open port")
     try:
-       # Execute the SQL command
-       cursor.execute(insertStatement)
-       # Commit your changes in the database
-       db.commit()
+        cursor.execute(insertStatement)
+        db.commit()
     except:
-       # Rollback in case there is any error
         db.rollback()
         print("insert failed on open port")
 
 def insertIntoConlusions(db, scanID, vulnerabilityLevel, Result):
 
     cursor = db.cursor()
-    insertStatement = "INSERT INTO CONCLUSIONS (SCAN_ID, VULNERABILITY_LEVEL, RESULT) \
-    VALUES ('%s', '%s', '%s')" % \
-    (int(scanID), int(vulnerabilityLevel), Result)
+    insertStatement = "INSERT INTO CONCLUSIONS (ID, DESCRIPTION) \
+    VALUES ('%s', '%s')" % \
+                      (int(scanID), Result)
     try:
-       # Execute the SQL command
-       cursor.execute(insertStatement)
-       # Commit your changes in the database
-       db.commit()
+        # Execute the SQL command
+        cursor.execute(insertStatement)
+        # Commit your changes in the database
+        db.commit()
     except:
-       # Rollback in case there is any error
+        # Rollback in case there is any error
         db.rollback()
         print("insert failed on open port")
     db.close()
 
 def insertIntoScanHistory(db, scanID, dateTime, scanParameters, conclusionID, sitesVisited):
     cursor = db.cursor()
-    insertStatement = "INSERT INTO SCAN_HISTORY (SCAN_ID, SCAN_DATETIME, PARAMTERS, CONCLUSION_ID, SITES_VISITED) \
+    insertStatement = "INSERT INTO SCAN_HISTORY (SCAN_ID, SCAN_DATETIME, PARAMETERS, CONCLUSION_ID, SITES_SCANNED) \
     VALUES ('%s', '%s', '%s', '%s', '%s')" % \
-    (int(scanID), dateTime, scanParameters, conclusionID, sitesVisited)
+                      (int(scanID), dateTime, scanParameters, conclusionID, sitesVisited)
     try:
-       # Execute the SQL command
-       cursor.execute(insertStatement)
-       # Commit your changes in the database
-       db.commit()
+        cursor.execute(insertStatement)
+        db.commit()
     except:
-       # Rollback in case there is any error
         db.rollback()
-
-# if __name__ == "__main__":
-#     # Connection to AWS MySQL DB: Endpoint, Username, Password, Database_name
-#     cursor = db.cursor()
-#
-#     now = time.strftime('%Y-%m-%d %H:%M:%S')    # To mark time when scan starts, can move below for when scan is finished instead
-#     nameStr = 'Gaasdfggl3e4.com'
-#     regionStr = 'NZ'
-#     IPStr = '123.4.239.101'
-#     ipVersion = '4'
-#     servicesStr = '53'
-#     portResponseStr = 'HTML'
-#     contentsStr = 'None\nnone\nnone\none' # will be HTML contents
-#
-#     #insertSiteEntry(IPStr, nameStr, ipVersion, regionStr, portResponseStr, contentsStr, now)
-#     #insertOpenPort(IPStr, 5)
-#     retrieveOpenPortsOnIP(IPStr)
-#     retrieveSiteEntry("*", "SITE_NAME", "\"Gaggle.com\"")
-#     retrieveTableEntry("SITE_INFO", "*", "None", "None")
-#     retrievePlugins("\"Adrotate\"", "\"WordPress\"")
-# #print("dB version: %s" % data)
