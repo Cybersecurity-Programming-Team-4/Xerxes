@@ -126,15 +126,15 @@ def insertSiteEntry(db, ipAddress, hostName, ipVersion, region, openPorts, respo
     insertStatement = "INSERT INTO SITE_INFO(IP_ADDRESS, \
     SITE_NAME, IP_VERSION, COUNTRY, OPEN_PORTS, RESPONSES, \
     CONTENTS, CMS_TYPE, VULNERABILITY_SCORE, CHECKED_DATE) \
-    VALUES ('%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s')" % \
+    VALUES ('%s', '%s', '%s', '%s', '%s', '%s', '%s', ' %s', '%s', '%s')" % \
                       (ipAddress, hostName, ipVersion, region, openPorts, responses, contents, cms, score, scanDate)
 
     try:
         cursor.execute(insertStatement)
         db.commit()
-    except:
+    except Exception as e:
         db.rollback()
-        print("insert failed")
+        return "[error] with insert entry", e
 
 def updateSiteEntry(db, IP_address, field, new_value):
     cursor=db.cursor()
@@ -206,21 +206,18 @@ def retrievePlugins(db, plugin_name, CMS_name):
     else:
         return data
 
-
-def insert_into_site_vulnerabilities(db, scanID, siteIP):
+def insert_into_site_vulnerabilities(db, IP_address, type, description):
     cursor = db.cursor()
     # Where type is either a CVE Reference, CMS-related
     # Description is the CVE ID, or if CMS-related, something such as accessible Admin Login Page
     insertStatement = "INSERT INTO SITE_VULNERABILITIES (IP_ADDRESS, TYPE, DESCRIPTION) \
-    VALUES ('%s', '%s')" % \
-                      (int(scanID), siteIP)
-    print("trying to insert open port")
+    VALUES ('%s', '%s', '%s')" % \
+                      (IP_address, type, description)
     try:
         cursor.execute(insertStatement)
         db.commit()
     except:
         db.rollback()
-        print("insert failed on open port")
 
 def insertIntoConlusions(db, scanID, vulnerabilityLevel, Result):
 
@@ -249,3 +246,6 @@ def insertIntoScanHistory(db, scanID, dateTime, scanParameters, conclusionID, si
         db.commit()
     except:
         db.rollback()
+
+
+
