@@ -47,7 +47,9 @@ def parse_plugin_scan_result(IP_Address):
 
 if __name__ == '__main__':  # to test whether the script is being run on its own, meaning the Python interpreter has assigned main to its name
 
-    parse_plugin_scan_result("ldaksjf")
+    #parse_plugin_scan_result("ldaksjf")
+    #db = SQL_Statements.connect_database()
+
 
 
 else:
