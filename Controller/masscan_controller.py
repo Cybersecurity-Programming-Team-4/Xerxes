@@ -6,13 +6,20 @@ import subprocess
 class MasscanControl:
     IP_INCREMENT = 10000000
     TIME_INCREMENT = 15
-    IPV4_INT_START = 0
+    IPV4_INT_START = 1
     IPV4_INT_STOP = 4294967295
     BASE_DIR = '/home/shawnxxxxxxx'
-    MASSCAN_BIN = BASE_DIR + '/Xerxes/Scanners/masscan/bin/masscan'
-    MASSCAN_CMD = MASSCAN_BIN + ' -c ./xerxes-masscan.conf -p {} -oX {} --pcap {} {}-{}'
+    MASSCAN_BIN = BASE_DIR + '/Xerxes/Scanners/src/masscan/bin/masscan'
+    MASSCAN_CMD = '-c ./xerxes-masscan.conf -p {} -oX {} --pcap {} {}-{}'
     XML_OUT = '/var/log/xerxes-masscan-out-{}.xml'
     PCAP_OUT = '/var/log/xerxes-masscan-pcap-out-{}.pcap'
+
+    DEBUG_BASE_DIR = '/home/shawn/Workspace'
+    DEBUG_MASSCAN_BIN = DEBUG_BASE_DIR + '/Xerxes/Scanners/src/masscan/bin/masscan'
+    DEBUG_MASSCAN_CMD = '-c /home/shawn/Workspace/Xerxes/Controller/xerxes-masscan.conf -p {} -oX {} --pcap {} {}'
+    DEBUG_XML_OUT = '/home/shawn/Workspace/Xerxes/xerxes-masscan-out-{}.xml'
+    DEBUG_PCAP_OUT = '/home/shawn/Workspace/Xerxes/xerxes-masscan-pcap-out-{}.pcap'
+
     PORTS = (       20,  # FTP
                     21,  # FTP
                     22,  # SSH/SCP
@@ -79,16 +86,14 @@ class MasscanControl:
                     9091,  # Openfire
                     9100,  # HP Jet Direct
                     27374,  # Sub7 (Malicious)
-                    31337   # Back Orifice (Malicious)
-                )
+                    31337,   # Back Orifice (Malicious)
+            )
 
     def __init__(self):
         self.startIP = ipaddress.IPv4Address(MasscanControl.IPV4_INT_START)
         self.endIP = ipaddress.IPv4Address(MasscanControl.IPV4_INT_STOP)
-        self.count = 1
+        self.count = 2
         self.ports = str(MasscanControl.PORTS).strip('(').strip(')')
-
-
 
     def scheduleNextScan(self):
         sp = subprocess.run(['at', 'now + {} minutes python3 {}/Controller/main.py'.format(
@@ -112,11 +117,22 @@ class MasscanControl:
             self.scheduleNextScan()
         else:
             logging.error('Unhandled case while prepping for next scan! Start IP: {} End IP: {}\n'.format(nsip, neip))
+    def oneScan(self, subnet):
+        logging.debug('Masscan running. Subnet: {}\n'.format(subnet))
+
+        masscan_done = subprocess.run(['/usr/bin/pkexec', MasscanControl.DEBUG_MASSCAN_BIN, '-c', '/home/shawn/Workspace/Xerxes/Controller/'
+            'xerxes-masscan.conf', '-vv', '-p', self.ports, '-oX', MasscanControl.DEBUG_XML_OUT.format(self.count), '--pcap',
+            MasscanControl.DEBUG_PCAP_OUT.format(self.count), subnet])
+
+        if masscan_done.returncode == 0:
+            logging.debug('Masscan finished with return code 0. Args: {}\n'.format(masscan_done.args))
+        else:
+            logging.error('Masscan finished with return code {}.\n'.format(masscan_done.returncode))
 
     def startMasscan(self):
         logging.info('Masscan running. Range: {} - {}\n'.format(str(self.startIP), str(self.endIP)))
-        masscan_done = subprocess.run([MasscanControl.MASSCAN_CMD.format(self.ports, self.XML_OUT.format(self.count),
-                                                            self.PCAP_OUT.format(self.count), self.startIP, self.endIP)])
+        masscan_done = subprocess.run([MasscanControl.MASSCAN_BIN, MasscanControl.MASSCAN_CMD.format(self.ports, MasscanControl.XML_OUT.format(self.count),
+                                                            MasscanControl.PCAP_OUT.format(self.count), self.startIP, self.endIP)])
         if masscan_done.returncode == 0:
             logging.info('Masscan finished with return code 0.\n')
             self.prepNextScan()
