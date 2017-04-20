@@ -31,23 +31,23 @@ def store_scan_results(file_name):
         portsList = host.getElementsByTagName('port')
         address = host.getElementsByTagName('address')[0].attributes['addr'].value
         region = get_IP_region(db, address)
-        name = ""
-        responseStr = ""
         returnedName = getHostName(address)
         addressType = host.getElementsByTagName('address')[0].attributes['addrtype'].value
         openPortsStr = ""
         for port in portsList:
-            insertOpenPort(db, address, port.attributes['portid'].value)
-            openPortsStr = openPortsStr + port.attributes['portid'].value + ", "
-            statesList = port.getElementsByTagName('state')
-            for state in statesList:
-                responseStr = responseStr + state.attributes['reason'].value + ", "
-        insertSiteEntry(db, address, returnedName, addressType, region, openPortsStr, responseStr, "TEST_INPUT", "NULL", 0, scanTimeStr)
+            insert_into_site_open_services(db, address, port.attributes['portid'].value, None, None)
+            serviceList = port.getElementsByTagName('service')
+            for service in serviceList:
+                print(service.attributes['name'].value)
+                print(service.attributes['banner'].value)
+                insert_into_site_open_services(db, address, port.attributes['portid'].value, service.attributes['name'].value, service.attributes['banner'].value)
+        insertSiteEntry(db, address, returnedName, addressType, region, "Unknown", 0, scanTimeStr)
+        #                responseStr = responseStr + state.attributes['reason'].value + ", "
 
     db.close()
 
 if __name__ == "__main__":
-    file_name = 'parse_text.xml'
+    file_name = 'testfiles/xerxes-masscan-out-2.xml'
 
     store_scan_results(file_name)
     # with open("DatabaseInfo.txt") as f:

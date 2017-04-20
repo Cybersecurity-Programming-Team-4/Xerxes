@@ -121,13 +121,12 @@ def retrieveTableEntry(db, tableName, tableField, filterField, filterValue):
 
 
 # Basic insert, expects column values to be strings.
-def insertSiteEntry(db, ipAddress, hostName, ipVersion, region, openPorts, responses, contents, cms, score, scanDate):
+def insertSiteEntry(db, ipAddress, hostName, ipVersion, region, cms, score, scanDate):
     cursor = db.cursor()
     insertStatement = "INSERT INTO SITE_INFO(IP_ADDRESS, \
-    SITE_NAME, IP_VERSION, COUNTRY, OPEN_PORTS, RESPONSES, \
-    CONTENTS, CMS_TYPE, VULNERABILITY_SCORE, CHECKED_DATE) \
-    VALUES ('%s', '%s', '%s', '%s', '%s', '%s', '%s', ' %s', '%s', '%s')" % \
-                      (ipAddress, hostName, ipVersion, region, openPorts, responses, contents, cms, score, scanDate)
+    SITE_NAME, IP_VERSION, COUNTRY, CMS_TYPE, VULNERABILITY_SCORE, CHECKED_DATE) \
+    VALUES ('%s', '%s', '%s', '%s', '%s', '%s', '%s')" % \
+                      (ipAddress, hostName, ipVersion, region, cms, score, scanDate)
 
     try:
         cursor.execute(insertStatement)
@@ -161,23 +160,25 @@ def retrieveSiteEntry(db, tableField, filterField, filterValue):
     return data
 
 
-def insertOpenPort(db, siteIP, portNumber):
+def insert_into_site_open_services(db, siteIP, portNumber, service_name, banner):
 
     cursor = db.cursor()
-    insertStatement = "INSERT INTO SITE_OPEN_PORTS(IP_ADDRESS, PORT_NUMBER) \
-    VALUES ('%s', '%s')" % \
-                      (siteIP, int(portNumber))
-    print("trying to insert open port")
-    try:
-        # Execute the SQL command
-        cursor.execute(insertStatement)
-        # Commit your changes in the database
-        db.commit()
-    except:
-        # Rollback in case there is any error
-        db.rollback()
-        print("insert failed on open port")
-        #db.close()
+    insertStatement = "INSERT INTO SITE_OPEN_SERVICES(IP_ADDRESS, PORT_NUMBER, SERVICE_NAME, BANNER) \
+    VALUES ('%s', '%s', '%s', '%s')" % \
+                      (siteIP, int(portNumber), service_name, banner)
+    cursor.execute(insertStatement)
+    # Commit your changes in the database
+    db.commit()
+    # try:
+    #     # Execute the SQL command
+    #     cursor.execute(insertStatement)
+    #     # Commit your changes in the database
+    #     db.commit()
+    # except:
+    #     # Rollback in case there is any error
+    #     db.rollback()
+    #     print("insert failed on open port")
+    #     #db.close()
 
 def retrieveOpenPortsOnIP(db, siteIP):
     cursor = db.cursor()
