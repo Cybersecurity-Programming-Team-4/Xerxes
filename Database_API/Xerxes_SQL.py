@@ -67,20 +67,19 @@ def get_IP_region(db, IP_address):
     JOIN GEOIP_IP_BLOCKS AS A \
     ON A.GEONAME_ID = B.GEONAME \
     WHERE %s >= A.NETWORK_START AND %s <= A.NETWORK_END" % \
-                      (int_form, int_form)
+    (int_form, int_form)
 
     try:
         cursor.execute(selectStatement)
         db.commit()
     except:
         db.rollback()
-        print("select country failed")
         return "NULL"
     data = cursor.fetchall()
 
     return data[0][0]   # Return the country name serving as the region
 
-def get_GEOIP_Info(db, IP_address, field):
+def get_GEOIP_info(db, IP_address, field):
     cursor = db.cursor()
     int_form = struct.unpack("!I", socket.inet_aton(IP_address))[0]
     selectStatement = "SELECT * FROM GEOIP_LOCATION_INFO AS B \
@@ -99,24 +98,18 @@ def get_GEOIP_Info(db, IP_address, field):
 
     return data   # Return the country information as a dictionary
 
-def retrieveTableEntry(db, tableName, tableField, filterField, filterValue):
+def retrieve_table_entry(db, tableName, tableField, filterField, filterValue):
     cursor = db.cursor()
-    data = {}
     if filterValue == "None" or filterField == "None":
         selectStatement = "SELECT %s FROM %s" % (tableField, tableName)
     else:
         selectStatement = "SELECT %s FROM %s WHERE %s = %s" % (tableField, tableName, filterField, filterValue)
-    print("trying to select site info")
-    print ("select statement = " + selectStatement)
     try:
         cursor.execute(selectStatement)
-        data = cursor.fetchall()
+        return cursor.fetchall()
     except:
         db.rollback()
-        print("select failed on site info")
-
-    for row in data:
-        print(row)
+        return None
 
 
 # Basic insert, expects column values to be strings.
@@ -137,7 +130,7 @@ def insert_site_entry(db, ipAddress, hostName, ipVersion, region, cms, score, sc
         db.rollback()
         return "[error] with insert entry", e
 
-def updateSiteEntry(db, IP_address, field, new_value):
+def update_site_entry(db, IP_address, field, new_value):
     cursor=db.cursor()
     update_statement = "UPDATE SITE_INFO SET %s = %s WHERE IP_ADDRESS = %s" % (IP_address, field, new_value)
     try:

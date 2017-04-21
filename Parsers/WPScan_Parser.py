@@ -1,13 +1,11 @@
 #!/usr/bin/python3
-import pymysql
-import Xerxes_SQL
-#import scrape
 import sys
-import re
+sys.path.insert(0,"..\\Database_API")
+import Xerxes_SQL
 
 def parse_plugin_scan_result(IP_Address):
     db = Xerxes_SQL.connect_database()
-    with open("\\Test_Documents\\" +IP_Address + "_WPScan.txt", 'r') as infile:
+    with open("..\\Test_Documents\\" +IP_Address + "_WPScan.txt", 'r') as infile:
         for line in infile:
             #print(line)
             if line.rstrip('\n') == "[!] The remote website is up, but does not seem to be running WordPress.":
@@ -16,7 +14,7 @@ def parse_plugin_scan_result(IP_Address):
             if "WordPress version" in line:
                 version_line = line.rsplit()
                 if version_line[3] != "can":
-                    Xerxes_SQL.updateSiteEntry(db, IP_Address, "CMS", "WordPress " + version_line[3])
+                    Xerxes_SQL.update_site_entry(db, IP_Address, "CMS", "WordPress " + version_line[3])
             if "WordPress theme in use: " in line:
                 theme_line = line.rsplit()
                 print("theme = " + theme_line[5] + " " + theme_line[7])
@@ -34,8 +32,6 @@ def parse_plugin_scan_result(IP_Address):
                             Xerxes_SQL.insert_into_site_vulnerabilities(db, IP_Address, "Plugin", inserted_line)
         db.close()
 
-if __name__ == '__main__':  # to test whether the script is being run on its own, meaning the Python interpreter has assigned main to its name
-    print(sys.path)
-    #print(sys.argv[1])
-    #parse_plugin_scan_result(sys.argv[1])
+if __name__ == '__main__':
+    parse_plugin_scan_result(sys.argv[1])
 
