@@ -1,0 +1,103 @@
+Following redirection http://www.prayinjesusname.org/
+[+] URL: http://www.prayinjesusname.org/
+[+] Started: Mon Apr 17 22:41:27 2017
+
+[!] The WordPress 'http://www.prayinjesusname.org/readme.html' file exists exposing a version number
+[!] Full Path Disclosure (FPD) in 'http://www.prayinjesusname.org/wp-includes/rss-functions.php': 
+[+] Interesting header: AGE: 29
+[+] Interesting header: LINK: <http://www.prayinjesusname.org/wp-json/>; rel="https://api.w.org/", <http://www.prayinjesusname.org/>; rel=shortlink
+[+] Interesting header: SERVER: nginx/1.12.0
+[+] Interesting header: VIA: 1.1 varnish
+[+] Interesting header: X-CACHE: HIT
+[+] Interesting header: X-POWERED-BY: PHP/5.6.16
+[+] Interesting header: X-VARNISH: 570617648 570617618
+[+] This site has 'Must Use Plugins' (http://codex.wordpress.org/Must_Use_Plugins)
+[+] XML-RPC Interface available under: http://www.prayinjesusname.org/xmlrpc.php
+[!] Upload directory has directory listing enabled: http://www.prayinjesusname.org/wp-content/uploads/
+[!] Includes directory has directory listing enabled: http://www.prayinjesusname.org/wp-includes/
+
+[+] WordPress version 4.6.4 (Released on 2017-03-06) identified from meta generator, readme, links opml
+
+[+] WordPress theme in use: pijn-pro - v3.0.2
+
+[+] Name: pijn-pro - v3.0.2
+ |  Location: http://www.prayinjesusname.org/wp-content/themes/pijn-pro/
+ |  Readme: http://www.prayinjesusname.org/wp-content/themes/pijn-pro/README.txt
+[!] Directory listing is enabled: http://www.prayinjesusname.org/wp-content/themes/pijn-pro/
+ |  Style URL: http://www.prayinjesusname.org/wp-content/themes/pijn-pro/style.css
+ |  Theme Name: PIJN Pro Theme
+ |  Theme URI: http://my.studiopress.com/themes/news/
+ |  Description: A mobile responsive and HTML5 theme built for the Genesis Framework based on the News Pro Theme c...
+ |  Author: Zero Gravity Web Works
+ |  Author URI: http://www.zerogravitywebworks.com/
+
+[+] Detected parent theme: genesis - v2.4.2
+
+[+] Name: genesis - v2.4.2
+ |  Location: http://www.prayinjesusname.org/wp-content/themes/genesis/
+ |  Style URL: http://www.prayinjesusname.org/wp-content/themes/genesis/style.css
+ |  Theme Name: Genesis
+ |  Theme URI: http://my.studiopress.com/themes/genesis/
+ |  Description: The industry standard for Premium WordPress Themes.
+ |  Author: StudioPress
+ |  Author URI: https://www.studiopress.com/
+
+[+] Enumerating plugins from passive detection ...
+ | 9 plugins found:
+
+[+] Name: accesspress-social-icons
+ |  Latest version: 1.6.7 
+ |  Location: http://www.prayinjesusname.org/wp-content/plugins/accesspress-social-icons/
+
+[+] Name: accesspress-social-share
+ |  Latest version: 4.3.2 
+ |  Location: http://www.prayinjesusname.org/wp-content/plugins/accesspress-social-share/
+
+[+] Name: advanced-responsive-video-embedder
+ |  Latest version: 8.3.1 
+ |  Location: http://www.prayinjesusname.org/wp-content/plugins/advanced-responsive-video-embedder/
+ |  Readme: http://www.prayinjesusname.org/wp-content/plugins/advanced-responsive-video-embedder/README.txt
+
+[+] Name: easy-twitter-feed-widget
+ |  Latest version: 0.6 
+ |  Location: http://www.prayinjesusname.org/wp-content/plugins/easy-twitter-feed-widget/
+[!] Directory listing is enabled: http://www.prayinjesusname.org/wp-content/plugins/easy-twitter-feed-widget/
+
+[+] Name: google-captcha
+ |  Latest version: 1.28 
+ |  Location: http://www.prayinjesusname.org/wp-content/plugins/google-captcha/
+[!] Directory listing is enabled: http://www.prayinjesusname.org/wp-content/plugins/google-captcha/
+
+[!] We could not determine a version so all vulnerabilities are printed out
+
+[!] Title: Google Captcha <= 1.12 - Authentication Bypass
+    Reference: https://wpvulndb.com/vulnerabilities/7823
+    Reference: http://jvn.jp/en/jp/JVN55063777/index.html
+    Reference: https://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2015-0890
+[i] Fixed in: 1.13
+
+[!] Title: Multiple BestWebSoft Plugins - Authenticated Reflected GET Cross-Site Scripting (XSS)
+    Reference: https://wpvulndb.com/vulnerabilities/8796
+    Reference: http://www.defensecode.com/advisories/DC-2017-02-014_50_WordPress_plugins_by_BestWebSoft_Advisory.pdf
+    Reference: http://lists.webappsec.org/pipermail/websecurity_lists.webappsec.org/2017-April/010860.html
+
+[+] Name: optin-revolution
+ |  Latest version: 1.4.9 
+ |  Location: http://www.prayinjesusname.org/wp-content/plugins/optin-revolution/
+
+[+] Name: rdv-youtube-playlist-video-player
+ |  Location: http://www.prayinjesusname.org/wp-content/plugins/rdv-youtube-playlist-video-player/
+[!] Directory listing is enabled: http://www.prayinjesusname.org/wp-content/plugins/rdv-youtube-playlist-video-player/
+
+[+] Name: thrive-visual-editor
+ |  Location: http://www.prayinjesusname.org/wp-content/plugins/thrive-visual-editor/
+[!] Directory listing is enabled: http://www.prayinjesusname.org/wp-content/plugins/thrive-visual-editor/
+
+[+] Name: wordpress-seo - v3.9
+ |  Location: http://www.prayinjesusname.org/wp-content/plugins/wordpress-seo/
+[!] The version is out of date, the latest version is 4.6
+
+[+] Finished: Mon Apr 17 22:46:15 2017
+[+] Requests Done: 332
+[+] Memory used: 122.402 MB
+[+] Elapsed time: 00:04:47

@@ -1,5 +1,5 @@
 #!/usr/bin/python3
-import SQL_Statements
+import Xerxes_SQL
 import requests
 import scrape
 

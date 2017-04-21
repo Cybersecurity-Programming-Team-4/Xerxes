@@ -1,5 +1,5 @@
 #!/usr/bin/python3
-from SQL_Statements import *
+from Xerxes_SQL import *
 from xml.dom import minidom
 import pymysql
 import multiprocessing

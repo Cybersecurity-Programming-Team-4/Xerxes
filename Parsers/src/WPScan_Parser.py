@@ -1,12 +1,12 @@
 #!/usr/bin/python3
 import pymysql
-import SQL_Statements
+import Xerxes_SQL
 #import scrape
 import sys
 import re
 
 def parse_plugin_scan_result(IP_Address):
-    db = SQL_Statements.connect_database()
+    db = Xerxes_SQL.connect_database()
     version_regex = "WordPress version"
     with open("testfiles\\prayWPScan.txt", 'r') as infile:
         for line in infile:
@@ -46,8 +46,7 @@ def parse_plugin_scan_result(IP_Address):
         #     print("found redirection, stripping it")
 
 if __name__ == '__main__':  # to test whether the script is being run on its own, meaning the Python interpreter has assigned main to its name
-
-    #parse_plugin_scan_result("ldaksjf")
+    parse_plugin_scan_result(sys.argv[1])
     #db = SQL_Statements.connect_database()
 
 

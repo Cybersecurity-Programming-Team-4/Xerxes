@@ -58,7 +58,7 @@ def connect_database():
         content = f.readlines()
     # you may also want to remove whitespace characters like `\n` at the end of each line
     content = [x.strip() for x in content]
-    return pymysql.connect(content[0], content[1], content[2], content[3])
+    return pymysql.connect(content[0], content[1], content[2], content[3], local_infile = 1)
 
 def get_IP_region(db, IP_address):
     cursor = db.cursor()
@@ -121,12 +121,13 @@ def retrieveTableEntry(db, tableName, tableField, filterField, filterValue):
 
 
 # Basic insert, expects column values to be strings.
-def insertSiteEntry(db, ipAddress, hostName, ipVersion, region, cms, score, scanDate):
+def insertSiteEntry(db, ipAddress, hostName, ipVersion, region, openPorts, responses, contents, cms, score, scanDate):
     cursor = db.cursor()
     insertStatement = "INSERT INTO SITE_INFO(IP_ADDRESS, \
-    SITE_NAME, IP_VERSION, COUNTRY, CMS_TYPE, VULNERABILITY_SCORE, CHECKED_DATE) \
-    VALUES ('%s', '%s', '%s', '%s', '%s', '%s', '%s')" % \
-                      (ipAddress, hostName, ipVersion, region, cms, score, scanDate)
+    SITE_NAME, IP_VERSION, COUNTRY, OPEN_PORTS, RESPONSES, \
+    CONTENTS, CMS_TYPE, VULNERABILITY_SCORE, CHECKED_DATE) \
+    VALUES ('%s', '%s', '%s', '%s', '%s', '%s', '%s', ' %s', '%s', '%s')" % \
+                      (ipAddress, hostName, ipVersion, region, openPorts, responses, contents, cms, score, scanDate)
 
     try:
         cursor.execute(insertStatement)
@@ -159,6 +160,26 @@ def retrieveSiteEntry(db, tableField, filterField, filterValue):
         return  "Site not found"
     return data
 
+def insert_into_CVE_vulnerabilities(db, CVE_id, status, description):
+
+    cursor = db.cursor()
+    insertStatement = "INSERT INTO CVE_VULNERABILITIES(CVE_ID, STATUS, DESCRIPTION) \
+    VALUES ('%s', '%s', '%s') \
+    ON DUPLICATE KEY UPDATE  \
+    CVE_ID = VALUES(CVE_ID), STATUS = VALUES(STATUS), DESCRIPTION = VALUES(DESCRIPTION)" % \
+    (CVE_id, status, description)
+    # Execute the SQL command
+
+    try:
+        # Execute the SQL command
+        cursor.execute(insertStatement)
+        # Commit your changes in the database
+        db.commit()
+    except:
+        # Rollback in case there is any error
+        db.rollback()
+        print("Insert Failed on CVE Update")
+        #db.close()
 
 def insert_into_site_open_services(db, siteIP, portNumber, service_name, banner):
 
@@ -166,19 +187,17 @@ def insert_into_site_open_services(db, siteIP, portNumber, service_name, banner)
     insertStatement = "INSERT INTO SITE_OPEN_SERVICES(IP_ADDRESS, PORT_NUMBER, SERVICE_NAME, BANNER) \
     VALUES ('%s', '%s', '%s', '%s')" % \
                       (siteIP, int(portNumber), service_name, banner)
-    cursor.execute(insertStatement)
-    # Commit your changes in the database
-    db.commit()
-    # try:
-    #     # Execute the SQL command
-    #     cursor.execute(insertStatement)
-    #     # Commit your changes in the database
-    #     db.commit()
-    # except:
-    #     # Rollback in case there is any error
-    #     db.rollback()
-    #     print("insert failed on open port")
-    #     #db.close()
+
+    try:
+        # Execute the SQL command
+        cursor.execute(insertStatement)
+        # Commit your changes in the database
+        db.commit()
+    except:
+        # Rollback in case there is any error
+        db.rollback()
+        print("insert failed on open port")
+        #db.close()
 
 def retrieveOpenPortsOnIP(db, siteIP):
     cursor = db.cursor()
@@ -207,12 +226,29 @@ def retrievePlugins(db, plugin_name, CMS_name):
     else:
         return data
 
+def insert_into_vulnerable_plugins(db, name, cms_type, min_ver, max_ver, description):
+    cursor = db.cursor()
+    # Where type is either a CVE Reference, CMS-related
+    # Description is the CVE ID, or if CMS-related, something such as accessible Admin Login Page
+    insertStatement = "INSERT INTO VULNERABLE_PLUGINS (PLUGIN_NAME, CMS, MIN_VERSION, MAX_VERSION, DESCRIPTION) \
+    VALUES ('%s', '%s', '%s', '%s', '%s')  \
+    ON DUPLICATE KEY \
+        UPDATE CMS = CMS, MIN_VERSION = MIN_VERSION, MAX_VERSION = MAX_VERSION, DESCRIPTION = DESCRIPTION" % \
+                      (name, cms_type, min_ver, max_ver, description)
+    try:
+        cursor.execute(insertStatement)
+        db.commit()
+    except:
+        db.rollback()
+
 def insert_into_site_vulnerabilities(db, IP_address, type, description):
     cursor = db.cursor()
     # Where type is either a CVE Reference, CMS-related
     # Description is the CVE ID, or if CMS-related, something such as accessible Admin Login Page
     insertStatement = "INSERT INTO SITE_VULNERABILITIES (IP_ADDRESS, TYPE, DESCRIPTION) \
-    VALUES ('%s', '%s', '%s')" % \
+    VALUES ('%s', '%s', '%s') \
+    ON DUPLICATE KEY \
+        UPDATE TYPE = TYPE, DESCRIPTION = DESCRIPTION"% \
                       (IP_address, type, description)
     try:
         cursor.execute(insertStatement)
