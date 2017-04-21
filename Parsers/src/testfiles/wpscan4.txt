@@ -1,2 +1,0 @@
-[i] The remote host tried to redirect to: https://www.sonymusic.com/
-[?] Do you want follow the redirection ? [Y]es [N]o [A]bort, default: [N]

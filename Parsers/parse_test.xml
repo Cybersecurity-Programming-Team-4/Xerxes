@@ -1,0 +1,19 @@
+<?xml version="1.0"?>
+<!-- masscan v1.0 scan -->
+<?xml-stylesheet href="" type="text/xsl"?>
+<nmaprun scanner="masscan" start="1491195335" version="1.0-BETA"  xmloutputversion="1.03">
+<scaninfo type="syn" protocol="tcp" />
+<host endtime="1491195335"><address addr="72.0.212.50" addrtype="ipv4"/><ports><port protocol="tcp" portid="22"><state state="open" reason="syn-ack" reason_ttl="57"/></port><port protocol="tcp" portid="80"><state state="open" reason="syn-ack" reason_ttl="55"/></port></ports></host>
+<host endtime="1491195335"><address addr="72.0.143.88" addrtype="ipv4"/><ports><port protocol="tcp" portid="22"><state state="open" reason="syn-ack" reason_ttl="57"/></port><port protocol="tcp" portid="80"><state state="open" reason="syn-ack" reason_ttl="53"/></port></ports></host>
+<host endtime="1491195335"><address addr="72.0.131.106" addrtype="ipv4"/><ports><port protocol="tcp" portid="80"><state state="open" reason="syn-ack" reason_ttl="55"/></port></ports></host>
+<host endtime="1491195335"><address addr="72.0.131.93" addrtype="ipv4"/><ports><port protocol="tcp" portid="80"><state state="open" reason="syn-ack" reason_ttl="53"/></port></ports></host>
+<host endtime="1491195335"><address addr="72.0.136.28" addrtype="ipv4"/><ports><port protocol="tcp" portid="323"><state state="open" reason="syn-ack" reason_ttl="57"/></port><port protocol="tcp" portid="80"><state state="open" reason="syn-ack" reason_ttl="55"/></port></ports></host>
+<host endtime="1491195335"><address addr="72.0.138.66" addrtype="ipv4"/><ports><port protocol="tcp" portid="80"><state state="open" reason="syn-ack" reason_ttl="116"/></port></ports></host>
+<host endtime="1491195335"><address addr="72.0.252.245" addrtype="ipv4"/><ports><port protocol="tcp" portid="80"><state state="open" reason="syn-ack" reason_ttl="113"/></port></ports></host>
+<host endtime="1491195335"><address addr="72.0.135.234" addrtype="ipv4"/><ports><port protocol="tcp" portid="80"><state state="open" reason="syn-ack" reason_ttl="117"/></port></ports></host>
+<host endtime="1491195335"><address addr="72.0.218.26" addrtype="ipv4"/><ports><port protocol="tcp" portid="22"><state state="open" reason="syn-ack" reason_ttl="55"/></port></ports></host>
+<runstats>
+<finished time="1491195359" timestr="2017-04-03 04:55:59" elapsed="25" />
+<hosts up="1501" down="0" total="1501" />
+</runstats>
+</nmaprun>
