@@ -4,6 +4,7 @@ from xml.dom import minidom
 import pymysql
 import multiprocessing
 import time
+import datetime
 import socket
 
 def getHostName(IPAddress):
@@ -28,26 +29,25 @@ def store_scan_results(file_name):
     scanTimeStr = xmldoc.getElementsByTagName('finished')[0].attributes['timestr'].value
 
     for host in hosts:
+        timeStr = datetime.datetime.fromtimestamp(int(host.attributes['endtime'].value)).strftime('%Y-%m-%d %H:%M:%S')
         portsList = host.getElementsByTagName('port')
         address = host.getElementsByTagName('address')[0].attributes['addr'].value
         region = get_IP_region(db, address)
         returnedName = getHostName(address)
         addressType = host.getElementsByTagName('address')[0].attributes['addrtype'].value
-        openPortsStr = ""
         for port in portsList:
-            insert_into_site_open_services(db, address, port.attributes['portid'].value, None, None)
             serviceList = port.getElementsByTagName('service')
-            for service in serviceList:
-                print(service.attributes['name'].value)
-                print(service.attributes['banner'].value)
-                insert_into_site_open_services(db, address, port.attributes['portid'].value, service.attributes['name'].value, service.attributes['banner'].value)
-        insertSiteEntry(db, address, returnedName, addressType, region, "Unknown", 0, scanTimeStr)
-        #                responseStr = responseStr + state.attributes['reason'].value + ", "
+            if len(serviceList) == 0:
+                insert_into_site_open_services(db, address, port.attributes['portid'].value, "None", "None")
+            else:
+                for service in serviceList:
+                    insert_into_site_open_services(db, address, port.attributes['portid'].value, service.attributes['name'].value, service.attributes['banner'].value)
+        insert_site_entry(db, address, returnedName, addressType, region, "Unknown", 0, scanTimeStr)
 
     db.close()
 
 if __name__ == "__main__":
-    file_name = 'testfiles/xerxes-masscan-out-2.xml'
+    file_name = 'xerxes-masscan-out-1.xml'
 
     store_scan_results(file_name)
     # with open("DatabaseInfo.txt") as f:

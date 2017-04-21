@@ -69,7 +69,6 @@ def get_IP_region(db, IP_address):
     WHERE %s >= A.NETWORK_START AND %s <= A.NETWORK_END" % \
                       (int_form, int_form)
 
-    print("trying to get country of IP")
     try:
         cursor.execute(selectStatement)
         db.commit()
@@ -121,13 +120,15 @@ def retrieveTableEntry(db, tableName, tableField, filterField, filterValue):
 
 
 # Basic insert, expects column values to be strings.
-def insertSiteEntry(db, ipAddress, hostName, ipVersion, region, openPorts, responses, contents, cms, score, scanDate):
+def insert_site_entry(db, ipAddress, hostName, ipVersion, region, cms, score, scanDate):
     cursor = db.cursor()
     insertStatement = "INSERT INTO SITE_INFO(IP_ADDRESS, \
-    SITE_NAME, IP_VERSION, COUNTRY, OPEN_PORTS, RESPONSES, \
-    CONTENTS, CMS_TYPE, VULNERABILITY_SCORE, CHECKED_DATE) \
-    VALUES ('%s', '%s', '%s', '%s', '%s', '%s', '%s', ' %s', '%s', '%s')" % \
-                      (ipAddress, hostName, ipVersion, region, openPorts, responses, contents, cms, score, scanDate)
+    SITE_NAME, IP_VERSION, COUNTRY, CMS_TYPE, VULNERABILITY_SCORE, CHECKED_DATE) \
+    VALUES ('%s', '%s', '%s', '%s', '%s', '%s', '%s') \
+    ON DUPLICATE KEY \
+    UPDATE IP_ADDRESS = IP_ADDRESS, SITE_NAME = SITE_NAME, IP_VERISON = IP_VERSION, COUNTRY = COUNTRY \
+    CMS_TYPE = CMS_TYPE, VULNERABILITY_SCORE = VULNERABILITY_SCORE, CHECKED_DATE = CHECKED_DATE \ " % \
+    (ipAddress, hostName, ipVersion, region, cms, score, scanDate)
 
     try:
         cursor.execute(insertStatement)
@@ -181,23 +182,54 @@ def insert_into_CVE_vulnerabilities(db, CVE_id, status, description):
         print("Insert Failed on CVE Update")
         #db.close()
 
+def CMS_extension_lookup(db, name, cms_type):
+    cursor = db.cursor()
+    select_statement = "SELECT EXISTS(SELECT 1  \
+    FROM CMS_VULNERABILITIES \
+    WHERE EXTENSION_NAME = '%s' AND CMS = '%s' \
+    LIMIT 1)" % (name, cms_type)
+    cursor.execute(select_statement)
+    data = cursor.fetchone()
+    # try:
+    #     # Execute the SQL command
+    #     cursor.execute(select_statement)
+    #     data = cursor.fetchall()
+    #     # Commit your changes in the database
+    #     db.commit()
+    # except:
+    #     # Rollback in case there is any error
+    #     db.rollback()
+    #     return False
+    print("data = ")
+    print(data[0])
+    if data[0] == 1:
+        print("returning true")
+        return True
+    else:
+        return False
+        #db.close()
 def insert_into_site_open_services(db, siteIP, portNumber, service_name, banner):
 
     cursor = db.cursor()
     insertStatement = "INSERT INTO SITE_OPEN_SERVICES(IP_ADDRESS, PORT_NUMBER, SERVICE_NAME, BANNER) \
-    VALUES ('%s', '%s', '%s', '%s')" % \
-                      (siteIP, int(portNumber), service_name, banner)
+    VALUES ('%s', '%s', '%s', '%s') \
+    ON DUPLICATE KEY \
+    UPDATE IP_ADDRESS = IP_ADDRESS, PORT_NUMBER = PORT_NUMBER, SERVICE_NAME = SERVICE_NAME, BANNER = BANNER " % \
+    (siteIP, int(portNumber), service_name, banner)
 
-    try:
-        # Execute the SQL command
-        cursor.execute(insertStatement)
-        # Commit your changes in the database
-        db.commit()
-    except:
-        # Rollback in case there is any error
-        db.rollback()
-        print("insert failed on open port")
-        #db.close()
+    cursor.execute(insertStatement)
+    # Commit your changes in the database
+    db.commit()
+    # try:
+    #     # Execute the SQL command
+    #     cursor.execute(insertStatement)
+    #     # Commit your changes in the database
+    #     db.commit()
+    # except:
+    #     # Rollback in case there is any error
+    #     db.rollback()
+    #     print("insert failed on open port")
+    #     #db.close()
 
 def retrieveOpenPortsOnIP(db, siteIP):
     cursor = db.cursor()
@@ -250,6 +282,7 @@ def insert_into_site_vulnerabilities(db, IP_address, type, description):
     ON DUPLICATE KEY \
         UPDATE TYPE = TYPE, DESCRIPTION = DESCRIPTION"% \
                       (IP_address, type, description)
+
     try:
         cursor.execute(insertStatement)
         db.commit()
