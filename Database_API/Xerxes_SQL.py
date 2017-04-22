@@ -258,7 +258,7 @@ def get_IP_region(db, IP_address):
     int_form = struct.unpack("!I", socket.inet_aton(IP_address))[0]
     selectStatement = "SELECT COUNTRY FROM GEOIP_LOCATION_INFO AS B \
     JOIN GEOIP_IP_BLOCKS AS A \
-    ON A.GEONAME_ID = B.GEONAME \
+    ON A.GEONAME_ID = B.GEONAME_ID \
     WHERE %s >= A.NETWORK_START AND %s <= A.NETWORK_END" % \
     (int_form, int_form)
 
@@ -277,7 +277,7 @@ def get_GEOIP_info(db, IP_address, field):
     int_form = struct.unpack("!I", socket.inet_aton(IP_address))[0]
     selectStatement = "SELECT * FROM GEOIP_LOCATION_INFO AS B \
     JOIN GEOIP_IP_BLOCKS AS A \
-    ON A.GEONAME_ID = B.GEONAME \
+    ON A.GEONAME_ID = B.GEONAME_ID \
     WHERE %s >= A.NETWORK_START AND %s <= A.NETWORK_END" % \
     (int_form, int_form)
 
