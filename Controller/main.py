@@ -1,4 +1,4 @@
-#!/usr/bin/env python3
+#!/usr/bin/python3
 
 import logging
 import os
@@ -6,13 +6,16 @@ import pickle
 from Controller import masscan_controller
 
 
+BASE_DIR = os.getcwd()
+LOG_DIR = BASE_DIR + '/Logs'
+
 def runAnalysis(filename):
     pass
 
 def main():
-    logging.basicConfig(filename='/var/log/xerxes.log', format='[%(levelname)s] %(asctime)s \
+    logging.basicConfig(filename=LOG_DIR + '/xerxes-controller.log', format='[%(levelname)s] %(asctime)s \
                                         %(filename)s:%(funcName)s %(lineno)d %(message)s')
-    if os.path.isfile(os.getcwd() + '/Controller/pickle/xerxes_controller.pkl'):
+    if os.path.isfile(BASE_DIR + '/Controller/pickle/xerxes_controller.pkl'):
         try:
             with open('./pickle/xerxes-masscan-controller.pkl', 'rb+') as xp:
                 mc_pickle = pickle.load(xp)
@@ -20,7 +23,7 @@ def main():
                 pickle.dump(mc_pickle, xp)
 
         except IOError as e:
-            logging.exception('Could not open pickle file for reading/writing!\n')
+            logging.exception('Could not open pickle file for reading/writing!')
     else:
         mc = masscan_controller.MasscanControl()
         mc.startMasscan()
@@ -28,7 +31,7 @@ def main():
             with open('./pickle/xerxes-masscan-controller.pkl', 'wb') as wp:
                 pickle.dump(mc, wp)
         except IOError as e:
-            logging.exception('Could not open pickle file for writing!\n')
+            logging.exception('Could not open pickle file for writing!')
 
 def test():
     logging.basicConfig(filename='/home/shawn/PycharmProjects/Xerxes/xerxes.log', format='[%(levelname)s] %(asctime)s \

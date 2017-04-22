@@ -2,11 +2,11 @@
 import sys
 import os
 import logging
-sys.path.insert(0,"..\\Database_API")
-import Xerxes_SQL
+#sys.path.insert(0,"..\\Database_API")
+from Database_API import Xerxes_SQL
 
-if __name__ == '__main__':
-    logging.basicConfig(filename="WPScan_Parsing.log", level=logging.DEBUG)
+def WPScan(f):
+    logging.basicConfig(filename="../Logs/WPScan_Parsing.log", level=logging.DEBUG)
     file_name = "..\\Test_Documents\\" + sys.argv[1] + "_WPScan.txt"
     try:
         infile = open(file_name, 'r')

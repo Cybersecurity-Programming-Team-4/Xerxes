@@ -12,7 +12,7 @@ def receive_message(topic_name, subscription_name):
     results = subscription.pull(return_immediately=True)
 
     for ack_id, message in results:
-        logging.info('Message Received: {}: {}, {}\n'.format(message.message_id, message.data, message.attributes))
+        logging.info('Message Received: {}: {}, {}'.format(message.message_id, message.data, message.attributes))
 
     # Acknowledge received messages. If you do not acknowledge, Pub/Sub will redeliver the message.
     if results:

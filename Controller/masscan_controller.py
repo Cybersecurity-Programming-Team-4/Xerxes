@@ -8,17 +8,18 @@ class MasscanControl:
     TIME_INCREMENT = 15
     IPV4_INT_START = 1
     IPV4_INT_STOP = 4294967295
-    BASE_DIR = '/home/shawnxxxxxxx'
-    MASSCAN_BIN = BASE_DIR + '/Xerxes/Scanners/src/masscan/bin/masscan'
+    BASE_DIR = os.getcwd()
+    MASSCAN_BIN = BASE_DIR + '/Scanners/src/masscan/bin/masscan'
     MASSCAN_CMD = '-c ./xerxes-masscan.conf -p {} -oX {} --pcap {} {}-{}'
-    XML_OUT = '/var/log/xerxes-masscan-out-{}.xml'
-    PCAP_OUT = '/var/log/xerxes-masscan-pcap-out-{}.pcap'
+    XML_OUT = BASE_DIR + '/OutFiles/xerxes-masscan-out-{}.xml'
+    PCAP_OUT = BASE_DIR + '/OutFiles/xerxes-masscan-pcap-out-{}.pcap'
 
-    DEBUG_BASE_DIR = '/home/shawn/PycharmProjects'
-    DEBUG_MASSCAN_BIN = DEBUG_BASE_DIR + '/Xerxes/Scanners/src/masscan/bin/masscan'
-    DEBUG_MASSCAN_CMD = '-c /home/shawn/PycharmProjects/Xerxes/Controller/xerxes-masscan.conf -p {} -oX {} --pcap {} {}'
-    DEBUG_XML_OUT = '/home/shawn/PycharmProjects/Xerxes/xerxes-masscan-out-{}.xml'
-    DEBUG_PCAP_OUT = '/home/shawn/PycharmProjects/Xerxes/xerxes-masscan-pcap-out-{}.pcap'
+    DEBUG_BASE_DIR = os.getcwd()
+    DEBUG_MASSCAN_BIN = DEBUG_BASE_DIR + '/Scanners/src/masscan/bin/masscan'
+    DEBUG_MASSCAN_CMD = '-c ' + DEBUG_BASE_DIR + '/Controller/xerxes-masscan.conf -p {} -oX {} --pcap {} {}'
+    MASSCAN_CONF = DEBUG_BASE_DIR + '/Controller/xerxes-masscan.conf'
+    DEBUG_XML_OUT = DEBUG_BASE_DIR + '/OutFiles/xerxes-masscan-out-{}.xml'
+    DEBUG_PCAP_OUT = DEBUG_BASE_DIR + '/OutFiles/xerxes-masscan-pcap-out-{}.pcap'
 
     PORTS = (       20,  # FTP
                     21,  # FTP
@@ -47,7 +48,7 @@ class MasscanControl:
                     139,  # SMB
                     143,  # IMAP4
                     161,  # SNMP (UDP)
-                    179,  # BGP
+                    #179,  # BGP
                     201,  # AppleTalk
                     389,  # LDAP
                     443,  # HTTPS
@@ -68,8 +69,8 @@ class MasscanControl:
                     1521,  # OracleDB
                     1629,  # DameWare
                     2049,  # NFS
-                    2745,  # Bagle.H (Malicious)
-                    3127,  # MyDoom (Malicious)
+                    #2745,  # Bagle.H (Malicious)
+                    #3127,  # MyDoom (Malicious)
                     3128,  # Squid Proxy
                     3306,  # MySQL
                     3389,  # RDP
@@ -78,6 +79,16 @@ class MasscanControl:
                     5432,  # Postgres
                     5666,  # Nagios
                     5900,  # VNC
+                    5901,
+                    5902,
+                    5903,
+                    5904,
+                    5905,
+                    5906,
+                    5907,
+                    5908,
+                    5909,
+                    5910,
                     6000,  # X11
                     6129,  # DameWare
                     6667,  # IRC
@@ -85,8 +96,8 @@ class MasscanControl:
                     9090,  # Openfire
                     9091,  # Openfire
                     9100,  # HP Jet Direct
-                    27374,  # Sub7 (Malicious)
-                    31337,   # Back Orifice (Malicious)
+                    #27374,  # Sub7 (Malicious)
+                    #31337,   # Back Orifice (Malicious)
             )
 
     def __init__(self):
@@ -97,11 +108,11 @@ class MasscanControl:
 
     def scheduleNextScan(self):
         sp = subprocess.run(['at', 'now + {} minutes python3 {}/Controller/main.py'.format(
-            MasscanControl.TIME_INCREMENT, os.getcwd())])
+            MasscanControl.TIME_INCREMENT, MasscanControl.BASE_DIR)])
         if sp.returncode == 0:
-            logging.debug('Scheduled Next Scan: {}\n'.format(sp.args))
+            logging.debug('Scheduled Next Scan: {}'.format(sp.args))
         else:
-            logging.error('Scan Failed to Schedule! Args: {} Return Code: {}\n'.format(sp.args, sp.returncode))
+            logging.error('Scan Failed to Schedule! Args: {} Return Code: {}'.format(sp.args, sp.returncode))
     def prepNextScan(self):
         nsip = int(self.startIP) + MasscanControl.IP_INCREMENT + 1
         neip = int(self.endIP) + MasscanControl.IP_INCREMENT + 1
@@ -116,26 +127,25 @@ class MasscanControl:
             self.endIP = ipaddress.IPv4Address(neip)
             self.scheduleNextScan()
         else:
-            logging.error('Unhandled case while prepping for next scan! Start IP: {} End IP: {}\n'.format(nsip, neip))
+            logging.error('Unhandled case while prepping for next scan! Start IP: {} End IP: {}'.format(nsip, neip))
     def oneScan(self, subnet):
-        logging.debug('Masscan running. Subnet: {}\n'.format(subnet))
+        logging.debug('Masscan running. Subnet: {}'.format(subnet))
 
-        masscan_done = subprocess.run(['/usr/bin/pkexec', MasscanControl.DEBUG_MASSCAN_BIN, '-c', '/home/shawn/PycharmProjects/Xerxes/Controller/'
-            'xerxes-masscan.conf', '-vv', '-p', self.ports, '-oX', MasscanControl.DEBUG_XML_OUT.format(self.count), '--pcap',
+        masscan_done = subprocess.run(['/usr/bin/pkexec', MasscanControl.DEBUG_MASSCAN_BIN, '-c', MasscanControl.MASSCAN_CONF,
+            '-vv', '-p', self.ports, '-oX', MasscanControl.DEBUG_XML_OUT.format(self.count), '--pcap',
             MasscanControl.DEBUG_PCAP_OUT.format(self.count), subnet])
 
         if masscan_done.returncode == 0:
-            logging.debug('Masscan finished with return code 0. Args: {}\n'.format(masscan_done.args))
+            logging.debug('Masscan finished with return code 0. Args: {}'.format(masscan_done.args))
         else:
-            logging.error('Masscan finished with return code {}.\n'.format(masscan_done.returncode))
+            logging.error('Masscan finished with return code {}.'.format(masscan_done.returncode))
 
     def startMasscan(self):
-        logging.info('Masscan running. Range: {} - {}\n'.format(str(self.startIP), str(self.endIP)))
+        logging.info('Masscan running. Range: {} - {}'.format(str(self.startIP), str(self.endIP)))
         masscan_done = subprocess.run([MasscanControl.MASSCAN_BIN, MasscanControl.MASSCAN_CMD.format(self.ports, MasscanControl.XML_OUT.format(self.count),
                                                             MasscanControl.PCAP_OUT.format(self.count), self.startIP, self.endIP)])
         if masscan_done.returncode == 0:
-            logging.info('Masscan finished with return code 0.\n')
+            logging.info('Masscan finished with return code 0.')
             self.prepNextScan()
-
         else:
-            logging.error('Masscan finished with return code {}.\n'.format(masscan_done.returncode))
+            logging.error('Masscan finished with return code {}.'.format(masscan_done.returncode))
