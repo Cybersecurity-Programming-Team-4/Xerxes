@@ -14,11 +14,11 @@ class MasscanControl:
     XML_OUT = '/var/log/xerxes-masscan-out-{}.xml'
     PCAP_OUT = '/var/log/xerxes-masscan-pcap-out-{}.pcap'
 
-    DEBUG_BASE_DIR = '/home/shawn/Workspace'
+    DEBUG_BASE_DIR = '/home/shawn/PycharmProjects'
     DEBUG_MASSCAN_BIN = DEBUG_BASE_DIR + '/Xerxes/Scanners/src/masscan/bin/masscan'
-    DEBUG_MASSCAN_CMD = '-c /home/shawn/Workspace/Xerxes/Controller/xerxes-masscan.conf -p {} -oX {} --pcap {} {}'
-    DEBUG_XML_OUT = '/home/shawn/Workspace/Xerxes/xerxes-masscan-out-{}.xml'
-    DEBUG_PCAP_OUT = '/home/shawn/Workspace/Xerxes/xerxes-masscan-pcap-out-{}.pcap'
+    DEBUG_MASSCAN_CMD = '-c /home/shawn/PycharmProjects/Xerxes/Controller/xerxes-masscan.conf -p {} -oX {} --pcap {} {}'
+    DEBUG_XML_OUT = '/home/shawn/PycharmProjects/Xerxes/xerxes-masscan-out-{}.xml'
+    DEBUG_PCAP_OUT = '/home/shawn/PycharmProjects/Xerxes/xerxes-masscan-pcap-out-{}.pcap'
 
     PORTS = (       20,  # FTP
                     21,  # FTP
@@ -92,7 +92,7 @@ class MasscanControl:
     def __init__(self):
         self.startIP = ipaddress.IPv4Address(MasscanControl.IPV4_INT_START)
         self.endIP = ipaddress.IPv4Address(MasscanControl.IPV4_INT_STOP)
-        self.count = 2
+        self.count = 3
         self.ports = str(MasscanControl.PORTS).strip('(').strip(')')
 
     def scheduleNextScan(self):
@@ -120,7 +120,7 @@ class MasscanControl:
     def oneScan(self, subnet):
         logging.debug('Masscan running. Subnet: {}\n'.format(subnet))
 
-        masscan_done = subprocess.run(['/usr/bin/pkexec', MasscanControl.DEBUG_MASSCAN_BIN, '-c', '/home/shawn/Workspace/Xerxes/Controller/'
+        masscan_done = subprocess.run(['/usr/bin/pkexec', MasscanControl.DEBUG_MASSCAN_BIN, '-c', '/home/shawn/PycharmProjects/Xerxes/Controller/'
             'xerxes-masscan.conf', '-vv', '-p', self.ports, '-oX', MasscanControl.DEBUG_XML_OUT.format(self.count), '--pcap',
             MasscanControl.DEBUG_PCAP_OUT.format(self.count), subnet])
 

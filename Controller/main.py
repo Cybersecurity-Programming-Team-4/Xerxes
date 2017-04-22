@@ -31,7 +31,7 @@ def main():
             logging.exception('Could not open pickle file for writing!\n')
 
 def test():
-    logging.basicConfig(filename='/home/shawn/Workspace/Xerxes/xerxes.log', format='[%(levelname)s] %(asctime)s \
+    logging.basicConfig(filename='/home/shawn/PycharmProjects/Xerxes/xerxes.log', format='[%(levelname)s] %(asctime)s \
                                             %(filename)s:%(funcName)s %(lineno)d %(message)s')
     mc = masscan_controller.MasscanControl()
     mc.oneScan('41.0.0.0/18')
