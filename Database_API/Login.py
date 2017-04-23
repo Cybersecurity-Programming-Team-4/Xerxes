@@ -4,6 +4,7 @@ import pymysql
 import hashlib
 from Xerxes_SQL import *
 
+
 def checkLogin(db, username, password):
     cursor = db.cursor()
     password_statement = "SELECT PASSWORD, SALT FROM USERS WHERE USERNAME = " + "\'" + username + "\'"
