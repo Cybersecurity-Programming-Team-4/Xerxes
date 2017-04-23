@@ -32,12 +32,13 @@ def MassXMLParse(f):
         addressType = host.getElementsByTagName('address')[0].attributes['addrtype'].value
 
         for port in portsList:
-            serviceList = port.getElementsByTagName('service')
-            if len(serviceList) == 0:   # For blank services
-                Xerxes_SQL.insert_into_site_open_services(db, address, port.attributes['portid'].value, "None", "None")
-            else:
-                for service in serviceList:
-                    Xerxes_SQL.insert_into_site_open_services(db, address, port.attributes['portid'].value, service.attributes['name'].value, service.attributes['banner'].value)
+            if port.attributes['portid'].value != 0:    # Disregard host check scan
+                serviceList = port.getElementsByTagName('service')
+                if len(serviceList) == 0:   # For blank services
+                    Xerxes_SQL.insert_into_site_open_services(db, address, port.attributes['portid'].value, "None", "None")
+                else:
+                    for service in serviceList:
+                        Xerxes_SQL.insert_into_site_open_services(db, address, port.attributes['portid'].value, service.attributes['name'].value, service.attributes['banner'].value)
 
         # Add with just initial info
         Xerxes_SQL.insert_site_entry(db, address, returnedName, addressType, region, timeStr)
