@@ -2,6 +2,8 @@ import ipaddress
 import os
 import logging
 import subprocess
+from Controller import export_files
+from Controller import analysis
 
 class MasscanControl:
     IP_INCREMENT = 10000000
@@ -142,10 +144,14 @@ class MasscanControl:
 
     def startMasscan(self):
         logging.info('Masscan running. Range: {} - {}'.format(str(self.startIP), str(self.endIP)))
-        masscan_done = subprocess.run([MasscanControl.MASSCAN_BIN, MasscanControl.MASSCAN_CMD.format(self.ports, MasscanControl.XML_OUT.format(self.count),
-                                                            MasscanControl.PCAP_OUT.format(self.count), self.startIP, self.endIP)])
+        ofx = MasscanControl.XML_OUT.format(self.count)
+        ofp = MasscanControl.PCAP_OUT.format(self.count)
+        masscan_done = subprocess.run(['/usr/bin/pkexec', MasscanControl.MASSCAN_BIN, '-c', MasscanControl.MASSCAN_CONF,
+             '-vv', '-p', self.ports, '-oX', ofx, '--pcap', ofp, self.startIP, self.endIP])
         if masscan_done.returncode == 0:
             logging.info('Masscan finished with return code 0.')
             self.prepNextScan()
+
         else:
             logging.error('Masscan finished with return code {}.'.format(masscan_done.returncode))
+
