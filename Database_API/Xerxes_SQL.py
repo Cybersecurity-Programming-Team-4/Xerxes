@@ -4,10 +4,10 @@ import socket
 import struct
 import logging
 import datetime
-# def write_log(log_name, log_info):
-#     with open
-# To map well-known port to the expected service when listing results
 
+# Code to interact with Xerxes' CloudSQL Database with python code running SQL statementss
+
+# To map well-known port to the expected service when listing results
 def map_port_service(port_number):
     # Dictionary of Port Numbers and their Services
     portDict = {1 : 'TCPMUX',
@@ -58,12 +58,12 @@ def map_port_service(port_number):
 def connect_database():
     with open("DatabaseInfo.txt") as f:
         content = f.readlines()
-    # you may also want to remove whitespace characters like `\n` at the end of each line
-    content = [x.strip() for x in content]
+        content = [x.strip() for x in content]
+
     try:
         return pymysql.connect(content[0], content[1], content[2], content[3], local_infile = 1)
     except:
-        logging.debug("CRITICAL ERROR: CAN'T CONNECT TO DATABASE {}".format(datetime.datetime.now()))
+        logging.error("CRITICAL ERROR: CAN'T CONNECT TO DATABASE {}".format(datetime.datetime.now()))
         exit(-1)
 
 # Basic insert, expects column values to be strings.
@@ -81,7 +81,7 @@ def insert_site_entry(db, IP_address, hostName, ipVersion, region, scanDate):
         db.commit()
     except Exception as e:
         db.rollback()
-        logging.debug("Failed to insert {} in SITE_INFO Table".format(IP_address))
+        logging.error("Failed to insert {} in SITE_INFO Table".format(IP_address))
         return "[error] with insert entry", e
 
 def update_site_entry(db, IP_address, field, new_value):
@@ -92,7 +92,7 @@ def update_site_entry(db, IP_address, field, new_value):
         db.commit()
     except:
         db.rollback()
-        logging.debug("Update for {}, field = {} failed".format(IP_address, field))
+        logging.error("Update for {}, field = {} failed".format(IP_address, field))
 
 def retrieve_site_entry(db, table_field, filter_field, filter_value):
     cursor = db.cursor()
@@ -122,7 +122,7 @@ def insert_device_entry(db, IP_address, MAC_address, taxonomy, vendor):
         db.commit()
     except Exception as e:
         db.rollback()
-        logging.debug("Failed to insert {} in DEVICE_INFO Table".format(IP_address))
+        logging.error("Failed to insert {} in DEVICE_INFO Table".format(IP_address))
         return "[error] with insert entry", e
 
 def insert_into_whois(db, IP_address, organization):
@@ -140,7 +140,7 @@ def insert_into_whois(db, IP_address, organization):
     except:
         # Rollback in case there is any error
         db.rollback()
-        logging.debug("Insert failed on WHOIS for IP \"{}\"".format(IP_address))
+        logging.error("Insert failed on WHOIS for IP \"{}\"".format(IP_address))
 
 def insert_into_site_open_services(db, IP_address, portNumber, service_name, banner):
 
@@ -158,7 +158,7 @@ def insert_into_site_open_services(db, IP_address, portNumber, service_name, ban
     except:
         # Rollback in case there is any error
         db.rollback()
-        logging.debug("Insert failed on OPEN_SERVICE for IP \"{}\"".format(IP_address))
+        logging.error("Insert failed on OPEN_SERVICE for IP \"{}\"".format(IP_address))
 
 def insert_into_site_vulnerabilities(db, IP_address, type, description):
     cursor = db.cursor()
@@ -175,7 +175,7 @@ def insert_into_site_vulnerabilities(db, IP_address, type, description):
         db.commit()
     except:
         db.rollback()
-        logging.debug("Insert failed for {} site vulnerability: {}".format(IP_address, description))
+        logging.error("Insert failed for {} site vulnerability: {}".format(IP_address, description))
 
 def retrieve_site_vulnerabilities(db, IP_Address):
     cursor = db.cursor()
@@ -183,21 +183,21 @@ def retrieve_site_vulnerabilities(db, IP_Address):
         cursor.execute("SELECT * FROM SITE_VULNERABILITIES WHERE IP_ADDRESS = %s", IP_Address)
     except:
         db.rollback()
-        logging.debug("Failed to vulnerabilities for {}".format(IP_Address))
+        logging.error("Failed to retrieve vulnerabilities for {}".format(IP_Address))
         return None
     else:
         return cursor.fetchall()
 
-def insert_into_scan_history(db, scanID, start_time, end_time):
+def insert_into_scan_history(db, start_time, end_time):
     cursor = db.cursor()
     insertStatement = "INSERT INTO SCAN_HISTORY (SCAN_ID, START_TIME, END_TIME) \
-    VALUES ('%s', '%s', '%s')" % \
-    (int(scanID), start_time, end_time)
+    VALUES ('%s', '%s')" % \
+    (start_time, end_time)
     try:
         cursor.execute(insertStatement)
         db.commit()
     except:
-        logging.debug("Could not record scan history for scan {} from {} to {}".format(scanID, start_time, end_time))
+        logging.error("Could not record scan history for scan information from {} to {}".format(start_time, end_time))
         db.rollback()
 
 def insert_into_CVE_vulnerabilities(db, CVE_id, status, description):
@@ -228,10 +228,8 @@ def insert_scan_requests(db, request_id, requester, target, submission_time):
     try:
         # Execute the SQL command
         cursor.execute(insertStatement)
-        # Commit your changes in the database
         db.commit()
     except:
-        # Rollback in case there is any error
         db.rollback()
         logging.debug("Failed to record request from {}".format(requester))
         db.close()
