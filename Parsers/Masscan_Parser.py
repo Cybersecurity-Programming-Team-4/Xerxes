@@ -1,12 +1,27 @@
 #!/usr/bin/python3
 import sys
 #sys.path.insert(0,"..\\Database_API")
-from Controller import export_files
+#from Controller import export_files
 from Database_API import Xerxes_SQL
 from xml.dom import minidom
 import datetime
 import socket
 import logging
+from ipwhois import IPWhois
+def get_WHOIS(IPAddress):
+    # try:
+    #     response = IPWhois(IPAddress).lookup_whois()
+    # except:
+    #     logging.error("WHOIs lookup failed for {}".format(IPAddress))
+    #     return None
+    # else:
+    #     return response
+    response = IPWhois(IPAddress).lookup_whois()
+
+    subobject = response['nets']
+    print(subobject)
+    print(response['nets'][0]['name'])
+    print(response['asn_country_code'])#['nets']['name'])#['name'])
 
 def getHostName(IPAddress):
     try:
@@ -29,7 +44,9 @@ def MassXMLParse(f):
         # Grabbing rest of hot information from Masscan
         portsList = host.getElementsByTagName('port')
         address = host.getElementsByTagName('address')[0].attributes['addr'].value
-        region = Xerxes_SQL.get_IP_region(db, address)
+        WHOIs_Response = get_WHOIS(address)
+        #region = Xerxes_SQL.get_IP_region(db, address) // Deprecated as WHOIS lookup returns the same info and more
+        region = WHOIs_Response['asn_country_code']
         returnedName = getHostName(address)
         addressType = host.getElementsByTagName('address')[0].attributes['addrtype'].value
 
@@ -43,5 +60,8 @@ def MassXMLParse(f):
                         Xerxes_SQL.insert_into_site_open_services(db, address, port.attributes['portid'].value, service.attributes['name'].value, service.attributes['banner'].value)
 
         # Add with just initial info
-        Xerxes_SQL.insert_site_entry(db, address, returnedName, addressType, region, timeStr)
+        #Xerxes_SQL.insert_site_entry(db, address, returnedName, addressType, region, timeStr)
     db.close()
+
+if __name__ == "__main__":
+    get_WHOIS("172.217.11.238")
