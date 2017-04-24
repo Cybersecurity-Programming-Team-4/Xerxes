@@ -125,13 +125,15 @@ def insert_device_entry(db, IP_address, MAC_address, taxonomy, vendor):
         logging.error("Failed to insert {} in DEVICE_INFO Table".format(IP_address))
         return "[error] with insert entry", e
 
-def insert_into_whois(db, IP_address, organization):
+def insert_into_whois(db, IP_address, response):
     cursor = db.cursor()
-    insertStatement = "INSERT INTO WHOIS_INFO(IP_ADDRESS, ORGANIZATION) \
-    VALUES ('%s', '%s') \
+    insertStatement = "INSERT INTO WHOIS_INFO(IP_ADDRESS, ORGANIZATION, COUNTRY, STATE, CITY, ADDRESS, DESCRIPTION, CONTACT) \
+    VALUES ('%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s') \
     ON DUPLICATE KEY \
     UPDATE IP_ADDRESS = IP_ADDRESS, ORGANIZATION = ORGANIZATION" % \
-    (IP_address, organization)
+    (IP_address, response.get('asn_country_code', "None"), response['nets'][0].get('country', "None"),
+        response['nets'][0].get('state', "None"), response['nets'][0].get('city', "None"), response['nets'][0].get('address', "None"),
+        response['nets'][0].get('description', "None"), response['nets'][0].get('emails', "None"))
 
     try:
         # Execute the SQL command
