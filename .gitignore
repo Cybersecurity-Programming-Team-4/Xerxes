@@ -93,3 +93,6 @@ ENV/
 .html
 .json
 .xml
+
+# Certificates files
+.pem
