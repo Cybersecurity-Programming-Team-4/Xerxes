@@ -101,5 +101,24 @@ PORTS = {           20 : 'FTP',
                     #31337 : 'Back Orifice (Malicious)'
 }
 
+FIELDS = {
+    'data' : ['data.data', 'data.text'],
+    'eth' : [ 'eth.src', 'eth.src_resolved'],
+    'tcp' : ['tcp.srcport'],
+    'ip' : ['ip.src'],
+    'http' : ['http.accept', 'http.accept_encoding', 'http.accept_language', 'http.authbasic', 'http.authcitrix',
+            'http.http.authcitrix.domain', 'http.authcitrix.password', 'http.authcitrix.session', 'http.authcitrix.user',
+            'http.authorization', 'http.cache_control', 'http.connection', 'http.content_encoding', 'http.content_type',
+            'http.file_data', 'http.host', 'http.location', 'http.proxy_authenticate', 'http.proxy_authorization', 'http.proxy_connect_host',
+            'http.proxy_connect_port', 'http.response.code', 'http.response.line', 'http.response.phrase', 'http.server', 'http.ssl_port',
+            'http.transfer_encoding', 'http.unknown_header', 'http.www_authenticate', 'http.x_forwarded_for'],
+    'http2' : ['http2.altsvc.field_value', 'http2.altsvc.host', 'http2.altsvc.origin', 'http2.altsvc.protocol', 'http2.continuation.header',
+            'http2.data.data', 'http2.settings', 'http2.unknown']
+
+
+
+}
+
+
 ERROR = 1
 SUCCESS = 0
