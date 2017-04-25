@@ -13,19 +13,19 @@ def map_port_service(port_number):
     return PORTS.get(port_number, "")
 
 # Local connection to DB, grabbing credentials from local file
-# TODO have Google app connect without needing to call connect
+# scrapped as Google's API only allows for DB administration, not usage. have Google app connect without needing to call connect
 # TODO encrypt and decrypt file with DB credentials
 def connect_database():
     with open("DatabaseInfo.txt") as f:
         content = f.readlines()
         content = [x.strip() for x in content]
-
     try:
-        return pymysql.connect(content[0], content[1], content[2], content[3], local_infile = 1)
-    except:
-        logging.error("CRITICAL ERROR: CAN'T CONNECT TO DATABASE {}".format(datetime.datetime.now()))
+        return pymysql.connect(content[0], content[1], content[2], content[3],
+                               local_infile = 1, ssl={'cert' : 'ssl_certs/client-cert.pem',
+                                                    'key' : 'ssl_certs/client-key.pem'})
+    except Exception as e:
+        logging.error("CRITICAL ERROR: CAN'T CONNECT TO DATABASE::REASON: {} TIME:{}".format(e, datetime.datetime.now()))
         exit(-1)
-
 
 # Basic insert, expects column values to be strings.
 def insert_site_entry(db, IP_address, hostName, ipVersion, region, scanDate):
@@ -281,12 +281,7 @@ def CMS_extension_lookup(db, name, cms_type):
         db.rollback()
         return False
 
-    if data[0] == 1:
-        print("returning true")
-        return True
-    else:
-        return False
-        #db.close()
+    return True if data[0] == 1 else False
 
 def retrieve_table_entry(db, tableName, tableField, filterField, filterValue):
     cursor = db.cursor()

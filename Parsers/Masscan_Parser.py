@@ -56,19 +56,19 @@ def MassXMLParse(f):
         for port in portsList:
             if port.attributes['portid'].value != 0:    # Disregard host check scan
                 serviceList = port.getElementsByTagName('service')
-                #if len(serviceList) == 0:   # For blank services
-                    #Xerxes_SQL.insert_into_site_open_services(db, address, port.attributes['portid'].value, "None", "None")
-                #else:
-                 #   for service in serviceList:
-                        #Xerxes_SQL.insert_into_site_open_services(db, address, port.attributes['portid'].value, service.attributes['name'].value, service.attributes['banner'].value)
+                if len(serviceList) == 0:   # For blank services
+                    Xerxes_SQL.insert_into_site_open_services(db, address, port.attributes['portid'].value, "None", "None")
+                else:
+                    for service in serviceList:
+                        Xerxes_SQL.insert_into_site_open_services(db, address, port.attributes['portid'].value, service.attributes['name'].value, service.attributes['banner'].value)
 
         # Add with just initial info
         Xerxes_SQL.insert_into_whois(db, address, WHOIs_Response)
-        #Xerxes_SQL.insert_site_entry(db, address, returnedName, addressType, region, timeStr)
+        Xerxes_SQL.insert_site_entry(db, address, returnedName, addressType, region, timeStr)
     db.close()
 
 # if __name__ == "__main__":    # For testing
-#     #MassXMLParse("..//Test_Documents/xerxes-masscan-out-2.xml")
+# #     #MassXMLParse("..//Test_Documents/xerxes-masscan-out-2.xml")
 #     WHOIs_Response = get_WHOIS("172.217.11.238")
 #     Xerxes_SQL.insert_into_whois(Xerxes_SQL.connect_database(), "172.217.11.238", WHOIs_Response)
 
