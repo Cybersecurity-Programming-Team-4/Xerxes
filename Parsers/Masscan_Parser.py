@@ -16,7 +16,6 @@ def get_WHOIS(IPAddress):
         logging.error("WHOIs lookup failed for {}".format(IPAddress))
         return None
     else:
-        print(response)
         # Response returns a dictionary with fields: nir, asn_registry, asn, asn_cir, asn_country_code, asn_date, and query
         # and raw, referral, raw_referral
         # There is a subdictionary at ['nets'], that has fields cidr, name, handle, range, description, country, state, city, address
@@ -25,8 +24,7 @@ def get_WHOIS(IPAddress):
         #print((response['nets'][0].get('name', "None")))    # Gets organization name
         #print(response['asn_country_code'])                 # Country name
         return response
-    #response = IPWhois(IPAddress).lookup_whois()
-    #['nets']['name'])#['name'])
+
 
 def getHostName(IPAddress):
     try:
@@ -65,9 +63,12 @@ def MassXMLParse(f):
                         #Xerxes_SQL.insert_into_site_open_services(db, address, port.attributes['portid'].value, service.attributes['name'].value, service.attributes['banner'].value)
 
         # Add with just initial info
+        Xerxes_SQL.insert_into_whois(db, address, WHOIs_Response)
         #Xerxes_SQL.insert_site_entry(db, address, returnedName, addressType, region, timeStr)
     db.close()
 
-if __name__ == "__main__":
-    MassXMLParse("..//Test_Documents/xerxes-masscan-out-2.xml")
-    #get_WHOIS("172.217.11.238")
+# if __name__ == "__main__":    # For testing
+#     #MassXMLParse("..//Test_Documents/xerxes-masscan-out-2.xml")
+#     WHOIs_Response = get_WHOIS("172.217.11.238")
+#     Xerxes_SQL.insert_into_whois(Xerxes_SQL.connect_database(), "172.217.11.238", WHOIs_Response)
+

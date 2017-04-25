@@ -66,6 +66,7 @@ def connect_database():
         logging.error("CRITICAL ERROR: CAN'T CONNECT TO DATABASE {}".format(datetime.datetime.now()))
         exit(-1)
 
+
 # Basic insert, expects column values to be strings.
 def insert_site_entry(db, IP_address, hostName, ipVersion, region, scanDate):
     cursor = db.cursor()
@@ -127,22 +128,32 @@ def insert_device_entry(db, IP_address, MAC_address, taxonomy, vendor):
 
 def insert_into_whois(db, IP_address, response):
     cursor = db.cursor()
+    email_str = ""
+    if response['nets'][0].get('emails', "None") == None: # WHOIS lookup on that IP didn't provide any emails/contact info
+        email_str = "None"
+    else:
+        for email in response['nets'][0].get('emails', "None"):
+            email_str = email_str + email + ", "
+        email_str = email_str[:-2]  # Remove the formatting characters at the end
+
     insertStatement = "INSERT INTO WHOIS_INFO(IP_ADDRESS, ORGANIZATION, COUNTRY, STATE, CITY, ADDRESS, DESCRIPTION, CONTACT) \
     VALUES ('%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s') \
     ON DUPLICATE KEY \
-    UPDATE IP_ADDRESS = IP_ADDRESS, ORGANIZATION = ORGANIZATION" % \
-    (IP_address, response.get('asn_country_code', "None"), response['nets'][0].get('country', "None"),
+    UPDATE IP_ADDRESS = IP_ADDRESS" % \
+    (IP_address, response['nets'][0].get('name', "None"), response['nets'][0].get('country', "None"),
         response['nets'][0].get('state', "None"), response['nets'][0].get('city', "None"), response['nets'][0].get('address', "None"),
-        response['nets'][0].get('description', "None"), response['nets'][0].get('emails', "None"))
+        response['nets'][0].get('description', "None"), email_str)
 
-    try:
-        # Execute the SQL command
-        cursor.execute(insertStatement)
-        db.commit()
-    except:
-        # Rollback in case there is any error
-        db.rollback()
-        logging.error("Insert failed on WHOIS for IP \"{}\"".format(IP_address))
+    cursor.execute(insertStatement)
+    db.commit()
+    # try:
+    #     # Execute the SQL command
+    #     cursor.execute(insertStatement)
+    #     db.commit()
+    # except:
+    #     # Rollback in case there is any error
+    #     db.rollback()
+    #     logging.error("Insert failed on WHOIS for IP \"{}\"".format(IP_address))
 
 def insert_into_site_open_services(db, IP_address, portNumber, service_name, banner):
 
