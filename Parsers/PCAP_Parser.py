@@ -13,7 +13,7 @@ UNIVERSAL_FIELDS = {
     'ip' : ['ip.src', 'ip.src_host']
 }
 
-IGNORE_PROTOS = {'frame', 'geninfo'}
+IGNORE_PROTOS = {'frame', 'geninfo', 'fake-field-wrapper'}
 
 class PCAP_Parser:
     #    /home/shawn/Desktop/wireshark-2.2.6/tshark -r /home/shawn/PycharmProjects/Xerxes/Test_Documents/xerxes-masscan-pcap-out-3.pcap -2 -T pdml -R "tcp.stream==$stream" > stream-$stream.xml
@@ -47,9 +47,46 @@ class PCAP_Parser:
                 err = self.genXMLFromPCAP(s)
                 if err != SUCCESS:
                     raise Exception
+                mac_found = False
+                ip_found = False
+                prt_found = False
+                ip = ''
+                ip_host = ''
+                port = ''
+                mac_unresolved = ''
+                mac_resolved = ''
+                banner = ''
+                for elem in ET.ElementTree(self.xmlf).iter():
+                    if not mac_found and elem.tag == 'proto' and elem.attrib['name'] == 'eth':
+                        mac_resolved = elem.find('field[@name=\"eth.src_resolved\"]').attrib['show']
+                        mac_unresolved = elem.find('field[@name=\"eth.src\"]').attrib['show']
+                        mac_found = True
+                    elif not ip_found and elem.tag == 'proto' and elem.attrib['name'] == 'ip':
+                        ip = elem.find('field[@name=\"ip.src\"]').attrib['show']
+                        self.IP_ADDRESS.add(ip)
+                        ip_host = elem.find('field[@name=\"ip.src_host\"]').attrib['show']
+                        ip_found = True
+                    elif not prt_found and elem.tag == 'proto' and elem.attrib['name'] == 'tcp':
+                        port = elem.find('field[@name=\"tcp.srcport\"]').attrib['show']
+                        prt_found = True
+                    elif elem.tag == 'proto' and elem.attrib['name'] in IGNORE_PROTOS:
+                        pass
+                    elif elem.tag == 'proto' and elem.attrib['name'] in FIELDS.keys():
+                        svc = elem.attrib['name']
+                        ext = FIELDS[svc]
+                        if ext[0] == '*':
+                            for f in elem.iter():
+                                if f.tag == 'field':
+                                    name = f.get('name', default='')
+                                    if name == '':
+                                        name = 'Unknown Field'
+                                    showname = f.get('showname', default='')
+                                    show = f.get('show', default='')
 
-                protos = []
-                for event, elem in ET.iterparse(self.xmlf):
+
+                        else:
+                            for f in ext:
+                                pass
 
 
 
