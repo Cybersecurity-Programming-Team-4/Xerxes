@@ -21,8 +21,8 @@ def connect_database():
         content = [x.strip() for x in content]
     try:
         return pymysql.connect(content[0], content[1], content[2], content[3],
-                               local_infile = 1, ssl={'cert' : 'ssl_certs/client-cert.pem',
-                                                    'key' : 'ssl_certs/client-key.pem'})
+                               local_infile = 1)#, ssl={'cert' : 'ssl_certs/client-cert.pem',
+                                                 #   'key' : 'ssl_certs/client-key.pem'})
     except Exception as e:
         logging.error("CRITICAL ERROR: CAN'T CONNECT TO DATABASE::REASON: {} TIME:{}".format(e, datetime.datetime.now()))
         exit(-1)
@@ -60,12 +60,13 @@ def retrieve_site_entry(db, table_field, filter_field, filter_value):
     if filter_value == "None":
         selectStatement = "SELECT %s FROM SITE_INFO" % (table_field)
     else:
-        selectStatement = "SELECT %s FROM SITE_INFO WHERE %s = %s" % (table_field, filter_field, filter_value)
+        selectStatement = "SELECT %s FROM SITE_INFO WHERE %s = '%s'" % (table_field, filter_field, filter_value)
     try:
         cursor.execute(selectStatement)
         data = cursor.fetchall()
-    except:
+    except Exception as e:
         db.rollback()
+        print(e)
         return  "Site not found"
     return data
 
