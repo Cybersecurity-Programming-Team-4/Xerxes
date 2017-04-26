@@ -2,15 +2,14 @@
 import sys
 import os
 import logging
-#sys.path.insert(0,"..\\Database_API")
 from Database_API import Xerxes_SQL
-
+from GLOBALS import *
 
 
 def Parse_WPScan(IP):
-    logging.basicConfig(filename="../Logs/WPScan_Parsing.log", level=logging.DEBUG)
-    file_name = "../Test_Documents/" + IP + "_WPScan.txt"
-    print(file_name)
+    logging.basicConfig(filename=LOG_DIR + '/xerxes-controller.log', format='[%(levelname)s] %(asctime)s \
+                                            %(filename)s:%(funcName)s %(lineno)d %(message)s')
+    file_name = "Outfiles/" + IP + "_WPScan.txt"
     try:
         infile = open(file_name, 'r')
     except:
