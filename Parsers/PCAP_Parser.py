@@ -7,6 +7,14 @@ import datetime
 from GLOBALS import *
 import xml.etree.ElementTree as ET
 
+UNIVERSAL_FIELDS = {
+    'eth' : ['eth.src_resolved', 'eth.src'],
+    'tcp' : ['tcp.srcport'],
+    'ip' : ['ip.src', 'ip.src_host']
+}
+
+IGNORE_PROTOS = {'frame', 'geninfo'}
+
 class PCAP_Parser:
     #    /home/shawn/Desktop/wireshark-2.2.6/tshark -r /home/shawn/PycharmProjects/Xerxes/Test_Documents/xerxes-masscan-pcap-out-3.pcap -2 -T pdml -R "tcp.stream==$stream" > stream-$stream.xml
     def __init__(self, pcap_file):
@@ -40,9 +48,11 @@ class PCAP_Parser:
                 if err != SUCCESS:
                     raise Exception
 
+                protos = []
                 for event, elem in ET.iterparse(self.xmlf):
-                    if event == 'end':
-                        pass
+
+
+
         except Exception as e:
             logging.exception('Error while parsing XML file.', e)
             return ERROR
