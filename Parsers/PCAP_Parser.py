@@ -6,6 +6,7 @@ import os
 import datetime
 from GLOBALS import *
 import xml.etree.ElementTree as ET
+from Parsers import WiresharkXML
 
 UNIVERSAL_FIELDS = {
     'eth' : ['eth.src_resolved', 'eth.src'],
@@ -13,15 +14,26 @@ UNIVERSAL_FIELDS = {
     'ip' : ['ip.src', 'ip.src_host']
 }
 
-IGNORE_PROTOS = {'frame', 'geninfo'}
+IGNORE_PROTOS = {'frame', 'geninfo', 'fake-field-wrapper'}
+
+DATA_ORDER = ('showname', 'show', 'value')
 
 class PCAP_Parser:
-    #    /home/shawn/Desktop/wireshark-2.2.6/tshark -r /home/shawn/PycharmProjects/Xerxes/Test_Documents/xerxes-masscan-pcap-out-3.pcap -2 -T pdml -R "tcp.stream==$stream" > stream-$stream.xml
+    #/home/shawn/Desktop/wireshark-2.2.6/tshark -r /home/shawn/PycharmProjects/Xerxes/Test_Documents/xerxes-masscan-pcap-out-3.pcap -2 -T pdml -R "tcp.stream==$stream" > stream-$stream.xml
     def __init__(self, pcap_file):
         self.pcapf = pcap_file
         self.xmlf = ''
         self.IP_ADDRESS = set()
         self.TCP_STREAMS = []  # Holds stream numbers
+        self.banner = ''
+        self.mac_found = False
+        self.ip_found = False
+        self.prt_found = False
+        self.ip = ''
+        self.ip_host = ''
+        self.port = ''
+        self.mac_unresolved = ''
+        self.mac_resolved = ''
 
     def getStreams(self):
         try:
@@ -39,17 +51,29 @@ class PCAP_Parser:
             logging.exception('Failed BASH command.', e)
             return ERROR
 
+    def resetVariables(self):
+        self.banner = ''
+        self.mac_found = False
+        self.ip_found = False
+        self.prt_found = False
+        self.ip = ''
+        self.ip_host = ''
+        self.port = ''
+        self.mac_unresolved = ''
+        self.mac_resolved = ''
 
-
-    def parse(self):
+    def parsep(self):
         try:
             for s in self.TCP_STREAMS:
+
                 err = self.genXMLFromPCAP(s)
+                #send file to bucket
                 if err != SUCCESS:
                     raise Exception
+                with open(self.xmlf) as fh:
+                    WiresharkXML.parse_fh(fh, self.parsePacket)
 
-                protos = []
-                for event, elem in ET.iterparse(self.xmlf):
+
 
 
 
@@ -57,6 +81,70 @@ class PCAP_Parser:
             logging.exception('Error while parsing XML file.', e)
             return ERROR
 
+
+    def getData(self, elem):
+        for trydata in DATA_ORDER:
+            val = elem.get(trydata, default='')
+            if val != '':
+                return val
+        return ''
+
+    def parseField(self, elem):
+        svc = elem.get('showname', default='')
+        ext = FIELDS.get(svc)
+        b = set()
+        if ext[0] == '*':
+            for f in elem.iter():
+                if f.tag == 'field':
+                    name = f.get('name', default='')
+                    if name == '':
+
+                    else:
+                        data = self.getData(f)
+                        if data != '':
+                            b.add(data)
+
+
+        else:
+            for f in ext:
+                pass
+
+    def parsePacket(self, packet):
+
+        if not self.mac_found and packet.item_exists('eth.src'):
+            macs = packet.get_items('eth.src_resolved')
+            for mac in macs:
+                self.mac_resolved = mac.get_show()
+                if self.mac_resolved != '':
+                    self.mac_found = True
+                    break
+            macsur = packet.get_items('eth.src')
+            for macur in macsur:
+                self.mac_unresolved = macur.get_show()
+                if self.mac_unresolved != '':
+                    self.mac_found = True
+                    break
+        elif not self.ip_found and packet.item_exists('ip.src'):
+            ipsh = packet.get_items('ip.src_host')
+            for sh in ipsh:
+                self.ip_host = sh.get_show()
+                if self.ip_host != '':
+                    self.ip_found = True
+                    break
+            ips = packet.get_items('ip.src')
+            for s in ips:
+                self.ip = s.get_show()
+                if self.ip != '':
+                    self.ip_found = True
+                    break
+        elif not self.prt_found and packet.item_exists('tcp.srcport'):
+            port = packet.get_items('tcp.srcport')
+            for p in port:
+                self.port = p.get_show()
+                if self.port != '':
+                    self.prt_found = True
+                    break
+        elif packet.get_items() in FIELDS.keys():
 
 
     def genXMLFromPCAP(self, stream):

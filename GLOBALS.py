@@ -110,6 +110,7 @@ PORTS = {           20 : 'FTP',
 
 FIELDS = {
     'data' : ['data.data', 'data.text'],
+    'data-text-lines' : ['*'],
     'http' : ['http.accept', 'http.accept_encoding', 'http.accept_language', 'http.authbasic', 'http.authcitrix',
             'http.http.authcitrix.domain', 'http.authcitrix.password', 'http.authcitrix.session', 'http.authcitrix.user',
             'http.authorization', 'http.cache_control', 'http.connection', 'http.content_encoding', 'http.content_type',
@@ -176,7 +177,7 @@ FIELDS = {
     'snmp' : ['*'],
     'socks' : ['*'],
     'ssh' : ['*'],
-    'ssl' : ['*'],
+    'ssl' : ['ssl.record, '],
     'tacacs' : ['*'],
     'tacplus' : ['*'],
     'telnet' : ['*'],
