@@ -18,12 +18,13 @@ def Parse_WPScan(IP):
         db = Xerxes_SQL.connect_database()
         for line in infile:
             if line.rstrip('\n') == "[!] The remote website is up, but does not seem to be running WordPress.":
+                Xerxes_SQL.update_site_entry(db, IP, "CMS_TYPE", "None")
                 db.close()
                 exit(0)
             if "WordPress version" in line:
                 version_line = line.rsplit()
                 if version_line[3] != "can":
-                    Xerxes_SQL.update_site_entry(db, IP, "CMS", "WordPress " + version_line[3])
+                    Xerxes_SQL.update_site_entry(db, IP, "CMS_TYPE", "WordPress " + version_line[3])
             if "WordPress theme in use: " in line:
                 theme_line = line.rsplit()
                 Xerxes_SQL.insert_into_site_vulnerabilities(db, IP, "Theme",

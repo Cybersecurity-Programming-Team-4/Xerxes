@@ -11,6 +11,7 @@ XML_OUT = BASE_DIR + '/OutFiles/xerxes-masscan-out-{}.xml'
 PCAP_OUT = BASE_DIR + '/OutFiles/xerxes-masscan-pcap-out-{}.pcap'
 
 OUT_DIR = BASE_DIR + '/OutFiles/'
+LOG_DIR = BASE_DIR + '/Logs'
 
 TSHARK_BIN = ''
 
