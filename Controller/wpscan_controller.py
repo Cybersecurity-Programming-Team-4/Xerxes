@@ -30,6 +30,7 @@ class WPScan_Control:
             logging.info('WPScan finished with return code 0. Now parsing output')
             WPScan_Parser.Parse_WPScan(self.targetIP)
         else:
+            os.remove(WPScan_Control.OUTPUT.format(self.targetIP))
             logging.error('WPScan finished with return code {}.'.format(wpscan_response))
 
 
