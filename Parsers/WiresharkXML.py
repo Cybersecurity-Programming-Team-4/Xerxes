@@ -21,8 +21,12 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 import sys
 import xml.sax
 from xml.sax.saxutils import quoteattr
-import cStringIO as StringIO
+try:
+    from StringIO import StringIO
+except ImportError:
+    from io import StringIO
 
+IGNORE_PROTOS = {'frame', 'geninfo', 'eth', 'ip', 'tcp', 'fake-field-wrapper'}
 
 class CaptureFile:
     pass
@@ -71,6 +75,7 @@ class PacketList:
             if child.name == name:
                 raise FoundItException
             child._item_exists(name)
+
 
     def get_items(self, name, items=None):
         """Return all items that match the name 'name'.
@@ -225,6 +230,7 @@ class ParseXML(xml.sax.handler.ContentHandler):
         self.cb = cb
         self.chars = ""
         self.element_stack = []
+        self.protos = set()
 
     def startElement(self, name, xmlattrs):
         self.chars = ""
@@ -238,6 +244,8 @@ class ParseXML(xml.sax.handler.ContentHandler):
 
         elif name == self.ELEMENT_PROTOCOL:
             elem = Protocol(xmlattrs)
+            if elem.get_name() not in IGNORE_PROTOS:
+                self.protos.add(elem.get_name())
 
         elif name == self.ELEMENT_FIELD:
             elem = Field(xmlattrs)
@@ -269,7 +277,9 @@ class ParseXML(xml.sax.handler.ContentHandler):
         # If we just finished a Packet element, hand it to the
         # user's callback.
         if isinstance(elem, Packet):
-            self.cb(elem)
+            self.cb(elem, self.protos)
+            self.protos.clear()
+
 
     def characters(self, chars):
         self.chars = self.chars + chars
