@@ -9,7 +9,7 @@ from GLOBALS import *
 def Parse_WPScan(IP):
     logging.basicConfig(filename=LOG_DIR + '/xerxes-controller.log', format='[%(levelname)s] %(asctime)s \
                                             %(filename)s:%(funcName)s %(lineno)d %(message)s')
-    file_name = "Outfiles/" + IP + "_WPScan.txt"
+    file_name = "OutFiles/" + IP + "_WPScan.txt"
     try:
         infile = open(file_name, 'r')
     except:

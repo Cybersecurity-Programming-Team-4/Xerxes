@@ -6,12 +6,14 @@ from Parsers import WPScan_Parser
 from GLOBALS import *
 import subprocess
 
+LOG_DIR = BASE_DIR + '/Logs'
+
 class WPScan_Control:
     BASE_DIR = os.getcwd()
     WPScan_BIN = BASE_DIR + '/Scanners/src/wpscan/wpscan.rb'
     ARGS = ' --no-color --no-banner -r -e {} --url {}'
     ENUMS = '[p, t]'
-    OUTPUT = 'Outfiles/{}_WPScan.txt'
+    OUTPUT = 'OutFiles/{}_WPScan.txt'
 
     def __init__(self, IP):
         self.targetIP = IP
