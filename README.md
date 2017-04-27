@@ -9,6 +9,8 @@ Usage of an already launched instance of Xerxes can be done by going to [Xerxes.
 
 [WPScan](https://github.com/wpscanteam/wpscan) by the WPScan Team to assess a site for WordPress elements.
 
+[TShark](https://www.wireshark.org/docs/man-pages/tshark.html) a [WireShark](https://www.wireshark.org/) feature to process TCP packets and gain application-layer information.
+
 Information gathered from these tools are then processed and stored within the instance housing Xerxes and can be queried by users.
 
 Querying occurs from Xerxes' face, a sleek website acting as a front end to this project.
