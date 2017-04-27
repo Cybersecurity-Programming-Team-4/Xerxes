@@ -5,7 +5,7 @@ import subprocess
 import datetime
 from GLOBALS import *
 from Parsers import WiresharkXML
-from Database_API import Xerxes_SQL
+#from Database_API import Xerxes_SQL
 
 UNIVERSAL_FIELDS = {
     'eth' : ['eth.src_resolved', 'eth.src'],
@@ -32,22 +32,22 @@ class PCAP_Parser:
         self.port = ''
         self.mac_unresolved = ''
         self.mac_resolved = ''
-        self.DATABASE = Xerxes_SQL.connect_database()
+        #self.DATABASE = Xerxes_SQL.connect_database()
 
     def getStreams(self):
         try:
-            proc_done = subprocess.run([TSHARK_BIN, '-r', self.pcapf, '-2', '-R', '\"not (tcp.flags.reset == 1 && tcp.flags.ack == 1)\"', '-T', 'fields', '-e', 'tcp.stream'],
+            proc_done = subprocess.Popen([TSHARK_BIN, '-r', self.pcapf, '-2', '-R', 'not (tcp.flags.reset == 1 && tcp.flags.ack == 1)', '-T', 'fields', '-e', 'tcp.stream'],
                                 stdout=subprocess.PIPE)
-            proc_done.check_returncode()
-            uniq_done = subprocess.run(['uniq'], stdin=proc_done.stdout, stdout=subprocess.PIPE)
-            uniq_done.check_returncode()
-            sort_done = subprocess.run(['sort', '-n'], stdin=uniq_done.stdout, stdout=subprocess.PIPE)
-            sort_done.check_returncode()
-            byte_arr = sort_done.stdout
-            self.TCP_STREAMS = [int(x) for x in str(byte_arr, 'utf-8').split()] #Splitlines?
+            outp = proc_done.communicate()
+            uniq_done = subprocess.Popen(['uniq'], stdin=outp, stdout=subprocess.PIPE)
+            outu = uniq_done.communicate()
+            sort_done = subprocess.Popen(['sort', '-n'], stdin=outu, stdout=subprocess.PIPE)
+            byte_arr = sort_done.communicate()
+            print(byte_arr)
+            self.TCP_STREAMS = [int(x) for x in str(byte_arr[0], 'utf-8')] #Splitlines?
             return SUCCESS
         except Exception as e:
-            logging.exception('Failed BASH command.', e)
+            logging.exception('Failed BASH command!', exc_info=e)
             return ERROR
 
     def resetVariables(self):
@@ -71,12 +71,13 @@ class PCAP_Parser:
                     raise Exception
                 with open(self.xmlf) as fh:
                     WiresharkXML.parse_fh(fh, self.parsePacket)
+                print(self.ip, self.ip_host, self.port, self.mac_resolved, self.mac_unresolved)
                 if self.ip != '':
                     if self.ip not in self.IP_ADDRESS:
                         self.IP_ADDRESS.add(self.ip)
                         macf = self.mac_unresolved.replace(':', '')
                         ven = MAC_VENDORS.get(macf.upper()[:6], default='')
-                        Xerxes_SQL.insert_device_entry(self.DATABASE, self.ip, self.mac_unresolved, ven)
+                        print(ven)
 
         except Exception as e:
             logging.exception('Error while parsing XML file. IP: {} TCP Stream: {}'.format(self.ip, s), e)
