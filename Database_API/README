@@ -20,3 +20,5 @@ Password = Master Password
 Then you can configure the instance just like a local DB. (Add tables, columns, data, other configuration, etc.)
 
 For the Python code, it will be Python 3 and the library being used for DB work is PyMySQL, imported as pymysql, which you will have to install.
+
+Credentials to connect to the database will be in a file called DatabaseInfo.txt, which has been omitted for security.
