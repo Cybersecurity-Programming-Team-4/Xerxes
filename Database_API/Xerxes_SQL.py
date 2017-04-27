@@ -70,7 +70,7 @@ def retrieve_site_entry(db, table_field, filter_field, filter_value):
         return  "Site not found"
     return data
 
-def insert_device_entry(db, IP_address, MAC_address, taxonomy, vendor):
+def insert_device_entry(db, IP_address, MAC_address, vendor):
     cursor = db.cursor()
     insertStatement = "INSERT INTO DEVICE_INFO \
     (IP_ADDRESS, MAC_ADDRESS, VENDOR) \
