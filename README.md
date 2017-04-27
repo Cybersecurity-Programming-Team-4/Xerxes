@@ -25,7 +25,8 @@ The current iteration of Xerxes uses:
 Unforunately, these will all need to be manually configured.
 
 Following this, the easiest way to get Xerxes onto the instances are to clone the repo and server packages:
-git clone https://github.com/Cybersecurity-Programming-Team-4/Xerxes.git
+
+$ git clone https://github.com/Cybersecurity-Programming-Team-4/Xerxes.git
 
 Following this, run setup.py to acquire the needed libraries, the manual commands are:
 
