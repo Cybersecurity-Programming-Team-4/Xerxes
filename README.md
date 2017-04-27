@@ -39,11 +39,10 @@ $ pip3 install --upgrade google-cloud
 
 $ pip3 install cStringIO
 
-Then sudo apt-get install ruby-full to run WPScan, which can be considered an optional component.
+### Scanner installs:
+Masscan is included as a submodule and will be downloaded along with Xerxes. 
 
-$ cd Scanners/src/wpscan
-
-$ bundle install
+However, WPScan runs on Ruby and requires different installation. The instructions can be found on WPScan's site https://github.com/wpscanteam/wpscan
 
 Then start up Xerxes by running main.py and scans will begin.
 
