@@ -14,9 +14,8 @@ def map_port_service(port_number):
 
 # Local connection to DB, grabbing credentials from local file
 # scrapped as Google's API only allows for DB administration, not usage. have Google app connect without needing to call connect
-# TODO encrypt and decrypt file with DB credentials
 def connect_database():
-    with open("DatabaseInfo.txt") as f:
+    with open("/home/shawn/PycharmProjects/Xerxes/Database_API/DatabaseInfo.txt") as f:
         content = f.readlines()
         content = [x.strip() for x in content]
     try:
@@ -24,7 +23,7 @@ def connect_database():
                                local_infile = 1)#, ssl={'cert' : 'ssl_certs/client-cert.pem',
                                                  #   'key' : 'ssl_certs/client-key.pem'})
     except Exception as e:
-        logging.error("CRITICAL ERROR: CAN'T CONNECT TO DATABASE::REASON: {} TIME:{}".format(e, datetime.datetime.now()))
+        logging.error("CRITICAL ERROR: CAN'T CONNECT TO DATABASE::REASON: {}".format(e))
         exit(-1)
 
 # Basic insert, expects column values to be strings.

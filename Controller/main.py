@@ -1,17 +1,19 @@
 #!/usr/bin/python3
 
+import google.cloud.logging
 import logging
-import os
 import pickle
 from Controller import masscan_controller
-
-
-BASE_DIR = os.getcwd()
-LOG_DIR = BASE_DIR + '/Logs'
+from GLOBALS import *
 
 def main():
     logging.basicConfig(filename=LOG_DIR + '/xerxes-controller.log', format='[%(levelname)s] %(asctime)s \
                                         %(filename)s:%(funcName)s %(lineno)d %(message)s')
+
+    client = google.cloud.logging.Client(PROJECT_ID)
+    # Attaches a Google Stackdriver logging handler to the root logger
+    client.setup_logging(logging.INFO)
+
     if os.path.isfile(BASE_DIR + '/Controller/pickle/xerxes_controller.pkl'):
         try:
             with open('./pickle/xerxes-masscan-controller.pkl', 'rb+') as xp:
@@ -35,6 +37,3 @@ def test():
                                             %(filename)s:%(funcName)s %(lineno)d %(message)s')
     mc = masscan_controller.MasscanControl()
     mc.oneScan('41.0.0.0/18')
-
-if __name__ == '__main__':
-    test()

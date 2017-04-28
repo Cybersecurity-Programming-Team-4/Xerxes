@@ -3,10 +3,10 @@
 import logging
 import subprocess
 import time
-from io import TextIOWrapper, BufferedIOBase, BytesIO, TextIOBase, StringIO
+from io import StringIO
 from GLOBALS import *
 from Parsers import WiresharkXML
-#from Database_API import Xerxes_SQL
+from Database_API import Xerxes_SQL
 
 UNIVERSAL_FIELDS = {
     'eth' : ['eth.src_resolved', 'eth.src'],
@@ -18,7 +18,6 @@ IGNORE_PROTOS = {'frame', 'geninfo', 'fake-field-wrapper', 'eth', 'ip', 'tcp'}
 DATA_ORDER = ('showname', 'show', 'value')
 
 class PCAP_Parser:
-    #/home/shawn/Desktop/wireshark-2.2.6/tshark -r /home/shawn/PycharmProjects/Xerxes/Test_Documents/xerxes-masscan-pcap-out-3.pcap -2 -T pdml -R "tcp.stream==$stream" > stream-$stream.xml
     def __init__(self, pcap_file):
         self.pcapf = pcap_file
         self.xmlf = ''
@@ -33,7 +32,7 @@ class PCAP_Parser:
         self.port = ''
         self.mac_unresolved = ''
         self.mac_resolved = ''
-        #self.DATABASE = Xerxes_SQL.connect_database()
+        self.DATABASE = Xerxes_SQL.connect_database()
 
     def getStreams(self):
         try:
@@ -45,7 +44,7 @@ class PCAP_Parser:
                 self.TCP_STREAMS.add(int(p))
             return SUCCESS
         except Exception as e:
-            logging.exception('Failed BASH command!', exc_info=e)
+            logging.error('Failed BASH command! {}'.format(e))
             return ERROR
 
     def resetVariables(self):
@@ -65,19 +64,17 @@ class PCAP_Parser:
             for s in self.TCP_STREAMS:
                 self.resetVariables()
                 err = self.genXMLFromPCAP(s)
-
                 if err != SUCCESS:
                     raise Exception
                 with open(self.xmlf) as fh:
                     WiresharkXML.parse_fh(fh, self.parsePacket)
-                print(self.ip, self.ip_host, self.port, self.mac_resolved, self.mac_unresolved)
                 if self.ip != '':
                     if self.ip not in self.IP_ADDRESS:
                         self.IP_ADDRESS.add(self.ip)
                         macf = self.mac_unresolved.replace(':', '')
                         macff = macf.upper()[:6]
                         ven = MAC_VENDORS.get(macff, '')
-                        print(ven)
+                        Xerxes_SQL.insert_device_entry(self.DATABASE, self.ip, self.mac_unresolved)
 
         except Exception as e:
             logging.exception('Error while parsing XML file. IP: {} TCP Stream: {}'.format(self.ip, s), exc_info=e)
@@ -121,7 +118,8 @@ class PCAP_Parser:
             pitems = packet.get_items(p)
             for i in pitems:
                 i.dump(self.banner)
-            print(str(self.banner.getvalue()))
+        if len(self.banner.getvalue()) != 0:
+            Xerxes_SQL.insert_into_site_open_services(self.DATABASE)
 
     def genXMLFromPCAP(self, stream):
         self.xmlf = OUT_DIR + 'xerxes-tshark-out-{}.xml'.format(str(time.time()).replace('.', ''))

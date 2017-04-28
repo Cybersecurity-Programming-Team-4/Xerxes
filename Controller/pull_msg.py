@@ -1,9 +1,15 @@
 #!/usr/bin/python3
 from google.cloud import pubsub
 import logging
+import google.cloud.logging
+from GLOBALS import *
 
 def receive_message(topic_name, subscription_name):
     """Receives a message from a pull subscription."""
+    logging.basicConfig(filename=LOG_DIR + '/xerxes-controller.log', format='[%(levelname)s] %(asctime)s \
+                                            %(filename)s:%(funcName)s %(lineno)d %(message)s')
+
+    client = google.cloud.logging.Client(PROJECT_ID)
     pubsub_client = pubsub.Client()
     topic = pubsub_client.topic(topic_name)
     subscription = topic.subscription(subscription_name)
