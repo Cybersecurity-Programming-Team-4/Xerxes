@@ -6,12 +6,10 @@ from google.cloud import storage
 from google import cloud
 import logging
 import os
+from GLOBALS import *
 
 BUCKET = 'xerxes-output-files'
 PROJECT = 'xerxes-163204'
-XERXES_DIR = os.getcwd()
-LOGS_DIR = XERXES_DIR + '/Logs'
-OUT_DIR = XERXES_DIR + '/OutFiles'
 
 def exportFiles():
     exFiles = os.listdir(OUT_DIR)

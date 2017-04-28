@@ -2,7 +2,8 @@
 
 import logging
 import subprocess
-import datetime
+import time
+from io import TextIOWrapper, BufferedIOBase, BytesIO, TextIOBase, StringIO
 from GLOBALS import *
 from Parsers import WiresharkXML
 #from Database_API import Xerxes_SQL
@@ -22,8 +23,8 @@ class PCAP_Parser:
         self.pcapf = pcap_file
         self.xmlf = ''
         self.IP_ADDRESS = set()
-        self.TCP_STREAMS = []  # Holds stream numbers
-        self.banner = ''
+        self.TCP_STREAMS = set()  # Holds stream numbers
+        self.banner = StringIO()
         self.mac_found = False
         self.ip_found = False
         self.prt_found = False
@@ -36,22 +37,20 @@ class PCAP_Parser:
 
     def getStreams(self):
         try:
-            proc_done = subprocess.Popen([TSHARK_BIN, '-r', self.pcapf, '-2', '-R', 'not (tcp.flags.reset == 1 && tcp.flags.ack == 1)', '-T', 'fields', '-e', 'tcp.stream'],
-                                stdout=subprocess.PIPE)
-            outp = proc_done.communicate()
-            uniq_done = subprocess.Popen(['uniq'], stdin=outp, stdout=subprocess.PIPE)
-            outu = uniq_done.communicate()
-            sort_done = subprocess.Popen(['sort', '-n'], stdin=outu, stdout=subprocess.PIPE)
-            byte_arr = sort_done.communicate()
-            print(byte_arr)
-            self.TCP_STREAMS = [int(x) for x in str(byte_arr[0], 'utf-8')] #Splitlines?
+            proc_done = subprocess.run((TSHARK_BIN, '-r', self.pcapf, '-2', '-R', 'not (tcp.flags.reset == 1 && tcp.flags.ack == 1)', '-T', 'fields', '-e', 'tcp.stream'),
+                stdout=subprocess.PIPE)
+            outp = proc_done.stdout.decode().rstrip().splitlines()
+            for p in outp:
+                print(int(p))
+                self.TCP_STREAMS.add(int(p))
             return SUCCESS
         except Exception as e:
             logging.exception('Failed BASH command!', exc_info=e)
             return ERROR
 
     def resetVariables(self):
-        self.banner = ''
+        self.banner.close()
+        self.banner = StringIO()
         self.mac_found = False
         self.ip_found = False
         self.prt_found = False
@@ -66,7 +65,7 @@ class PCAP_Parser:
             for s in self.TCP_STREAMS:
                 self.resetVariables()
                 err = self.genXMLFromPCAP(s)
-                #send file to bucket
+
                 if err != SUCCESS:
                     raise Exception
                 with open(self.xmlf) as fh:
@@ -76,11 +75,12 @@ class PCAP_Parser:
                     if self.ip not in self.IP_ADDRESS:
                         self.IP_ADDRESS.add(self.ip)
                         macf = self.mac_unresolved.replace(':', '')
-                        ven = MAC_VENDORS.get(macf.upper()[:6], default='')
+                        macff = macf.upper()[:6]
+                        ven = MAC_VENDORS.get(macff, '')
                         print(ven)
 
         except Exception as e:
-            logging.exception('Error while parsing XML file. IP: {} TCP Stream: {}'.format(self.ip, s), e)
+            logging.exception('Error while parsing XML file. IP: {} TCP Stream: {}'.format(self.ip, s), exc_info=e)
             return ERROR
 
     def parsePacket(self, packet, protos):
@@ -120,12 +120,13 @@ class PCAP_Parser:
         for p in protos:
             pitems = packet.get_items(p)
             for i in pitems:
-                self.banner += i.dump()
-                print(self.banner)
+                i.dump(self.banner)
+            print(str(self.banner.getvalue()))
 
     def genXMLFromPCAP(self, stream):
-        self.xmlf = OUT_DIR + 'xerxes-tshark-out-{}.xml'.format(datetime.datetime.now())
-        proc_done = subprocess.run([TSHARK_BIN, '-r', self.pcapf, '-2', '-R', 'tcp.stream=={}'.format(stream), '-T', 'pdml', '>', self.xmlf])
+        self.xmlf = OUT_DIR + 'xerxes-tshark-out-{}.xml'.format(str(time.time()).replace('.', ''))
+        with open(self.xmlf, 'w') as f:
+            proc_done = subprocess.run((TSHARK_BIN, '-r', self.pcapf, '-2', '-R', 'tcp.stream=={}'.format(stream), '-T', 'pdml'), stdout=f)
         if proc_done.returncode == 0:
             logging.debug('Tshark finished with return code 0. Args: {}'.format(proc_done.args))
             return SUCCESS
@@ -141,7 +142,7 @@ class PCAP_Parser:
             self.parseStream()
 
 def test():
-    a = PCAP_Parser(pcap_file='/home/shawn/PycharmProjects/Xerxes/Test_Documents/xerxes-masscan-pcap-out-3.pcap')
+    a = PCAP_Parser(pcap_file='/home/shawn/Workspace/Xerxes/Test_Documents/xerxes-masscan-pcap-out-3.pcap')
     a.start()
 
 test()
