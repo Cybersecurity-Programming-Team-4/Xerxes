@@ -9,6 +9,7 @@ from GLOBALS import *
 
 # To map well-known port to the expected service when listing results
 def map_port_service(port_number):
+    global PORTS
     # Dictionary of Port Numbers and their Services
     return PORTS.get(port_number, "")
 

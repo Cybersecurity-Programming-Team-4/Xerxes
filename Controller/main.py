@@ -6,7 +6,7 @@ import pickle
 from Controller import masscan_controller
 from GLOBALS import *
 
-def main():
+def main_nc():
     logging.basicConfig(filename=LOG_DIR + '/xerxes-controller.log', format='[%(levelname)s] %(asctime)s \
                                         %(filename)s:%(funcName)s %(lineno)d %(message)s')
 
@@ -32,8 +32,10 @@ def main():
         except IOError as e:
             logging.exception('Could not open pickle file for writing!', e)
 
-def test():
-    logging.basicConfig(filename='/home/shawn/PycharmProjects/Xerxes/xerxes.log', format='[%(levelname)s] %(asctime)s \
-                                            %(filename)s:%(funcName)s %(lineno)d %(message)s')
+def main_c():
+    logConfig()
     mc = masscan_controller.MasscanControl()
-    mc.oneScan('41.0.0.0/18')
+    mc.startMasscanNS()
+
+if __name__ == 'main':
+    main_c()

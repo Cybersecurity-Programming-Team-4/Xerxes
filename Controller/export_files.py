@@ -8,13 +8,10 @@ import logging
 import os
 from GLOBALS import *
 
-BUCKET = 'xerxes-output-files'
-PROJECT = 'xerxes-163204'
-
 def exportFiles():
     exFiles = os.listdir(OUT_DIR)
     try:
-        client = storage.Client(PROJECT)
+        client = storage.Client(PROJECT_ID)
         bucket = client.get_bucket(BUCKET)
         for f in exFiles:
             blob = storage.Blob(f, bucket)
@@ -22,8 +19,39 @@ def exportFiles():
             blob.upload_from_filename(fp, 'text/plain', client) # Upload to storage bucket
             os.remove(fp)
     except cloud.exceptions as e:
-        logging.exception('Could not instantiate cloud storage objects!', e)
+        logging.error('Could not instantiate cloud storage objects! {}'.format(e))
     except IOError as e:
-        logging.exception('Log/Output file open error!', e)
+        logging.error('Log/Output file open error!'.format(e))
     except OSError as e:
-        logging.exception('Could not remove file!', e)
+        logging.error('Could not remove file! {}'.format(e))
+
+def exportFile(f, content_type):
+    try:
+        client = storage.Client(PROJECT_ID)
+        bucket = client.get_bucket(BUCKET)
+        blob = storage.Blob(f, bucket)
+        blob.upload_from_filename(f, content_type, client)  # Upload to storage bucket
+        os.remove(f)
+    except cloud.exceptions as e:
+        logging.error('Could not instantiate cloud storage objects! {}'.format(e))
+    except IOError as e:
+        logging.error('Log/Output file open error!'.format(e))
+    except OSError as e:
+        logging.error('Could not remove file! {}'.format(e))
+
+def exportLogs():
+    logFiles = os.listdir(LOG_DIR)
+    try:
+        client = storage.Client(PROJECT_ID)
+        bucket = client.get_bucket(BUCKET)
+        for f in logFiles:
+            blob = storage.Blob(f, bucket)
+            fp = LOG_DIR + '/' + f
+            blob.upload_from_filename(fp, 'text/plain', client)  # Upload to storage bucket
+            os.remove(fp)
+    except cloud.exceptions as e:
+        logging.error('Could not instantiate cloud storage objects! {}'.format(e))
+    except IOError as e:
+        logging.error('Log file open error!'.format(e))
+    except OSError as e:
+        logging.error('Could not remove file! {}'.format(e))
