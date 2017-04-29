@@ -89,9 +89,7 @@ class MasscanControl:
                 logging.info('Masscan finished with return code 0.')
                 self.PARSER.start(ofp)
                 export_files.exportFile(ofp, 'application/octet-stream')
-                export_files.exportFile(CURRENT_LOG_FILE, 'text/plain')
                 self.prepNextScan()
-                logConfig()
             else:
                 logging.error('Masscan finished with return code {}! Scan range {} - {} likely did not complete!'.
                               format(masscan_done.returncode, str(self.startIP), str(self.endIP)))

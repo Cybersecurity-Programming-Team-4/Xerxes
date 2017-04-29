@@ -230,10 +230,8 @@ ERROR = 1
 def logConfig():
     global CURRENT_LOG_FILE, LOG_COUNT
 
-    CURRENT_LOG_FILE = 'xerxes-{}-{}-{}.log'.format(LOG_COUNT, CURRENT_IP_START, CURRENT_IP_END)
-    logging.basicConfig(filename=LOG_DIR + '/' + CURRENT_LOG_FILE, format='[%(levelname)s] %(asctime)s \
+    logging.basicConfig(filename=LOG_DIR + '/' + 'xerxes.log', format='[%(levelname)s] %(asctime)s \
                                                 %(filename)s:%(funcName)s %(lineno)d %(message)s')
-    LOG_COUNT += 1
     client = google.cloud.logging.Client(PROJECT_ID)
     # Attaches a Google Stackdriver logging handler to the root logger
     client.setup_logging(logging.INFO)
