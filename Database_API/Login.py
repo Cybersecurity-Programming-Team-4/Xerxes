@@ -2,7 +2,9 @@
 
 import pymysql
 import hashlib
-from Database_API import Xerxes_SQL
+import sys
+sys.path.append('/home/shawn/Xerxes/Database_API')
+import Xerxes_SQL
 
 
 def checkLogin(db, username, password):

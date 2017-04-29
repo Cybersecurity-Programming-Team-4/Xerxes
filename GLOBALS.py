@@ -3,12 +3,12 @@ import logging
 import google.cloud.logging
 
 
-IP_INCREMENT = 100000
+IP_INCREMENT = 15000
 TIME_INCREMENT = 15
-IPV4_INT_START = 1
+IPV4_INT_START = 16777216
 IPV4_INT_STOP = 4294967295
 CURRENT_IP_START = 1
-CURRENT_IP_END = 2 + IP_INCREMENT
+CURRENT_IP_END = 16777216 + 1 + IP_INCREMENT
 
 
 BASE_DIR = '/home/shawn/Xerxes'
@@ -24,9 +24,13 @@ LOG_DIR = BASE_DIR + '/Logs'
 PROJECT_ID = 'xerxes-163204'
 BUCKET = 'xerxes-output-files'
 
-DATABASE_INFO = ''
+DATABASE_INFO = '/home/shawn/Xerxes/Database_API/DatabaseInfo.txt'
 
-TSHARK_BIN = '/home/shawn/wireshark-2.2.6/tshark'
+TSHARK_BIN = '/home/shawn/wireshark/tshark'
+
+CLIENT_CERT = '/home/ssl_certs_current/client-cert.pem'
+CLIENT_KEY = '/home/ssl_certs_current/client-key.pem'
+SERVER_CA = '/home/ssl_certs_current/server-ca.pem'
 
 #DEBUG_BASE_DIR = os.getcwd()
 #DEBUG_MASSCAN_BIN = DEBUG_BASE_DIR + '/Scanners/src/masscan/bin/masscan'

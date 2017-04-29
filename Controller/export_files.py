@@ -6,6 +6,8 @@ from google.cloud import storage
 from google import cloud
 import logging
 import os
+import sys
+sys.path.append('/home/shawn/Xerxes')
 from GLOBALS import *
 
 def exportFiles():
@@ -18,8 +20,6 @@ def exportFiles():
             fp = OUT_DIR + '/' + f
             blob.upload_from_filename(fp, 'text/plain', client) # Upload to storage bucket
             os.remove(fp)
-    except cloud.exceptions as e:
-        logging.error('Could not instantiate cloud storage objects! {}'.format(e))
     except IOError as e:
         logging.error('Log/Output file open error!'.format(e))
     except OSError as e:
@@ -32,8 +32,6 @@ def exportFile(f, content_type):
         blob = storage.Blob(f, bucket)
         blob.upload_from_filename(f, content_type, client)  # Upload to storage bucket
         os.remove(f)
-    except cloud.exceptions as e:
-        logging.error('Could not instantiate cloud storage objects! {}'.format(e))
     except IOError as e:
         logging.error('Log/Output file open error!'.format(e))
     except OSError as e:
@@ -49,8 +47,6 @@ def exportLogs():
             fp = LOG_DIR + '/' + f
             blob.upload_from_filename(fp, 'text/plain', client)  # Upload to storage bucket
             os.remove(fp)
-    except cloud.exceptions as e:
-        logging.error('Could not instantiate cloud storage objects! {}'.format(e))
     except IOError as e:
         logging.error('Log file open error!'.format(e))
     except OSError as e:

@@ -2,9 +2,13 @@ import ipaddress
 import os
 import logging
 import subprocess
-from Controller import export_files
+import sys
+sys.path.append('/home/shawn/Xerxes/Controller')
+sys.path.append('/home/shawn/Xerxes/Parsers')
+sys.path.append('/home/shawn/Xerxes')
+import export_files
 from GLOBALS import *
-from Parsers import PCAP_Parser
+import PCAP_Parser
 
 class MasscanControl:
     def __init__(self):
