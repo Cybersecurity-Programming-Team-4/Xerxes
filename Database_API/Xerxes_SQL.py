@@ -21,7 +21,7 @@ def connect_database():
         content = [x.strip() for x in content]
     try:
         return pymysql.connect(content[0], content[1], content[2], content[3],
-                               local_infile = 1)#, ssl={'cert' : 'ssl_certs/client-cert.pem',
+                               local_infile = 1, ssl={'cert' : 'ssl_certs/client-cert.pem',
                                                  #   'key' : 'ssl_certs/client-key.pem'})
     except Exception as e:
         logging.error("CRITICAL ERROR: CAN'T CONNECT TO DATABASE::REASON: {}".format(e))
