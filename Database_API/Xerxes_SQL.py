@@ -31,7 +31,7 @@ def connect_database():
 def insert_site_entry(db, IP_address, hostName, ipVersion, region, scanDate):
     cursor = db.cursor()
     insertStatement = "INSERT INTO SITE_INFO(IP_ADDRESS, \
-    SITE_NAME, IP_VERSION, COUNTRY, CMS_TYPE, VULNERABILITY_SCORE, CHECKED_DATE) \
+    SITE_NAME, IP_VERSION, COUNTRY, CHECKED_DATE) \
     VALUES ('%s', '%s', '%s', '%s', '%s') \
     ON DUPLICATE KEY \
     UPDATE IP_ADDRESS = IP_ADDRESS, SITE_NAME = SITE_NAME, IP_VERSION = IP_VERSION, COUNTRY = COUNTRY, CHECKED_DATE = CHECKED_DATE" % \
@@ -105,16 +105,15 @@ def insert_into_whois(db, IP_address, response):
         response['nets'][0].get('state', "None"), response['nets'][0].get('city', "None"), response['nets'][0].get('address', "None"),
         response['nets'][0].get('description', "None"), email_str)
 
-    cursor.execute(insertStatement)
-    db.commit()
-    # try:
-    #     # Execute the SQL command
-    #     cursor.execute(insertStatement)
-    #     db.commit()
-    # except:
-    #     # Rollback in case there is any error
-    #     db.rollback()
-    #     logging.error("Insert failed on WHOIS for IP \"{}\"".format(IP_address))
+
+    try:
+        # Execute the SQL command
+        cursor.execute(insertStatement)
+        db.commit()
+    except:
+        # Rollback in case there is any error
+        db.rollback()
+        logging.error("Insert failed on WHOIS for IP \"{}\"".format(IP_address))
 
 def insert_into_site_open_services(db, IP_address, portNumber, service_name, banner):
 
