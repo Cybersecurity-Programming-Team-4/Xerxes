@@ -21,10 +21,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 import sys
 import xml.sax
 from xml.sax.saxutils import quoteattr
-try:
-    from StringIO import StringIO
-except ImportError:
-    from io import StringIO
+from io import StringIO
 
 IGNORE_PROTOS = {'frame', 'geninfo', 'eth', 'ip', 'tcp', 'fake-field-wrapper'}
 
@@ -157,67 +154,64 @@ class ProtoTreeItem(PacketList):
     def get_hide(self):
         return self.hide
 
-    def dump(self, fh=sys.stdout):
+    def dump(self, fh):
         if self.name:
-            print >> fh, " name=%s" % (quoteattr(self.name),),
+            print(" name=%s" % (quoteattr(self.name),), file=fh)
 
         if self.showname:
-            print >> fh, "showname=%s" % (quoteattr(self.showname),),
+            print(" showname=%s" % (quoteattr(self.showname),), file=fh)
 
         if self.pos:
-            print >> fh, "pos=%s" % (quoteattr(self.pos),),
+            print(" pos=%s" % (quoteattr(self.pos),), file=fh)
 
         if self.size:
-            print >> fh, "size=%s" % (quoteattr(self.size),),
+            print(" size=%s" % (quoteattr(self.size),), file=fh)
 
         if self.value:
-            print >> fh, "value=%s" % (quoteattr(self.value),),
+            print(" value=%s" % (quoteattr(self.value),), file=fh)
 
         if self.show:
-            print >> fh, "show=%s" % (quoteattr(self.show),),
+            print(" show=%s" % (quoteattr(self.show),), file=fh)
 
         if self.hide:
-            print >> fh, "hide=%s" % (quoteattr(self.hide),),
+            print(" hide=%s" % (quoteattr(self.hide),), file=fh)
 
 
 class Packet(ProtoTreeItem, PacketList):
-    def dump(self, fh=sys.stdout, indent=0):
-        print >> fh, "  " * indent, "<packet>"
-        indent += 1
+    def dump(self, fh):
+        print("<packet>", file=fh)
         for child in self.children:
-            child.dump(fh, indent)
-        print >> fh, "  " * indent, "</packet>"
+            child.dump(fh)
+        print("</packet>", file=fh)
 
 
 class Protocol(ProtoTreeItem):
-    def dump(self, fh=sys.stdout, indent=0):
-        print >> fh, "%s<proto " % ("  " * indent,),
+    def dump(self, fh):
+        print("<proto ", file=fh)
 
         ProtoTreeItem.dump(self, fh)
 
-        print >> fh, '>'
+        print('>', file=fh)
 
-        indent += 1
         for child in self.children:
-            child.dump(fh, indent)
-        print >> fh, "  " * indent, "</proto>"
+            child.dump(fh)
+        print("</proto>", file=fh)
 
 
 class Field(ProtoTreeItem):
-    def dump(self, fh=sys.stdout, indent=0):
-        print >> fh, "%s<field " % ("  " * indent,),
+    def dump(self, fh):
+        print("<field ", file=fh)
 
         ProtoTreeItem.dump(self, fh)
 
         if self.children:
-            print >> fh, ">"
-            indent += 1
+            print(">", file=fh)
             for child in self.children:
-                child.dump(fh, indent)
-            print >> fh, "  " * indent, "</field>"
+                child.dump(fh)
+            print("</field>", file=fh)
 
         else:
-            print >> fh, "/>"
+            print("/>", file=fh)
 
 
 class ParseXML(xml.sax.handler.ContentHandler):
@@ -318,20 +312,5 @@ def parse_fh(fh, cb):
 
 def parse_string(text, cb):
     """Parse the PDML contained in a string."""
-    stream = StringIO.StringIO(text)
+    stream = StringIO(text)
     parse_fh(stream, cb)
-
-
-def _test():
-    import sys
-
-    def test_cb(obj):
-        pass
-
-    filename = sys.argv[1]
-    fh = open(filename, "r")
-    parse_fh(fh, test_cb)
-
-
-if __name__ == '__main__':
-    _test()
