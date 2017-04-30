@@ -2,6 +2,7 @@ import os
 import logging
 import shlex
 #from Controller import export_files
+from Database_API import Xerxes_SQL
 from Parsers import WPScan_Parser
 from GLOBALS import *
 import subprocess
@@ -33,5 +34,11 @@ class WPScan_Control:
             os.remove(WPScan_Control.OUTPUT.format(self.targetIP))
             logging.error('WPScan finished with return code {}.'.format(wpscan_response))
 
-
+def select_and_run_WPScans():
+    db = Xerxes_SQL.connect_database()
+    data = Xerxes_SQL.retrieve_scan_requests(db)
+    db.close()
+    for address in data:
+        controller = WPScan_Control(address[0])
+        controller.start_WPScan()
 

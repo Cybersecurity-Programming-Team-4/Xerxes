@@ -216,6 +216,27 @@ def insert_scan_requests(db, request_id, requester, target, submission_time):
         logging.debug("Failed to record request from {}: <{}>".format(requester, e))
         db.close()
 
+def update_scan_request(db, IP_address, new_value):
+    cursor=db.cursor()
+    update_statement = "UPDATE SCAN_REQUESTS SET APPROVAL_STATUS = '%s' WHERE IP_ADDRESS = '%s'" % (new_value, IP_address)
+    try:
+        cursor.execute(update_statement)
+        db.commit()
+    except Exception as e:
+        db.rollback()
+        logging.error("Requests update for {} failed: <{}>".format(IP_address, e))
+
+def retrieve_scan_requests(db):
+    cursor = db.cursor()
+    selectStatement = "SELECT IP_ADDRESS FROM SCAN_REQUESTS WHERE APPROVAL_STATUS = 'APPROVED'"
+    try:
+        cursor.execute(selectStatement)
+        data = cursor.fetchall()
+    except Exception as e:
+        db.rollback()
+        return  "Site not found"
+    return data
+
 def insert_new_user(db, username, password_hash, salt, level, API_key):
     cursor = db.cursor()
     insertStatement = "INSERT INTO USERS (USERNAME, PASSWORD, SALT, LEVEL, API_KEY) \
