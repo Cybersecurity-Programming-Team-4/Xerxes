@@ -17,13 +17,13 @@ def exportFiles():
         bucket = client.get_bucket(BUCKET)
         for f in exFiles:
             blob = storage.Blob(f, bucket)
-            fp = OUT_DIR + '/' + f
+            fp = '{}/{}'.format(OUT_DIR, f)
             blob.upload_from_filename(fp, 'text/plain', client) # Upload to storage bucket
             os.remove(fp)
     except google.cloud.exceptions.GoogleCloudError as e:
-        logging.error('Log/Output file open error!'.format(e))
+        logging.error('Google Cloud Log/Output file upload error! {}'.format(e))
     except IOError as e:
-        logging.error('Log/Output file open error!'.format(e))
+        logging.error('Log/Output file open error! {}'.format(e))
     except OSError as e:
         logging.error('Could not remove file! {}'.format(e))
 
@@ -35,9 +35,9 @@ def exportFile(f, content_type):
         blob.upload_from_filename(f, content_type, client)  # Upload to storage bucket
         os.remove(f)
     except google.cloud.exceptions.GoogleCloudError as e:
-        logging.error('Log/Output file open error!'.format(e))
+        logging.error('Google Cloud Log/Output file upload error! {}'.format(e))
     except IOError as e:
-        logging.error('Log/Output file open error!'.format(e))
+        logging.error('Log/Output file open error! {}'.format(e))
     except OSError as e:
         logging.error('Could not remove file! {}'.format(e))
 
@@ -52,8 +52,8 @@ def exportLogs():
             blob.upload_from_filename(fp, 'text/plain', client)  # Upload to storage bucket
             os.remove(fp)
     except google.cloud.exceptions.GoogleCloudError as e:
-        logging.error('Log/Output file open error!'.format(e))
+        logging.error('Google Cloud Log file upload error! {}'.format(e))
     except IOError as e:
-        logging.error('Log file open error!'.format(e))
+        logging.error('Log file open error! {}'.format(e))
     except OSError as e:
         logging.error('Could not remove file! {}'.format(e))

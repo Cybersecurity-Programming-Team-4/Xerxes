@@ -71,7 +71,7 @@ class MasscanControl:
         #ofx = XML_OUT.format(self.count)
         ofp = PCAP_OUT.format(self.count)
         masscan_done = subprocess.run(('sudo', MASSCAN_BIN, '-c', MASSCAN_CONF,
-             '-vv', '-p', self.ports, '--pcap', ofp, self.startIP, self.endIP))
+            '-p', self.ports, '--pcap', ofp, self.startIP, self.endIP))
         if masscan_done.returncode == 0:
             logging.info('Masscan finished with return code 0.')
             self.prepNextScan()
@@ -84,7 +84,7 @@ class MasscanControl:
             #ofx = XML_OUT.format(self.count)
             ofp = PCAP_OUT.format(self.count)
             masscan_done = subprocess.run(('sudo', MASSCAN_BIN, '-c', MASSCAN_CONF,
-                 '-vv', '-p', self.ports, '--pcap', ofp, str(self.startIP), str(self.endIP)))
+                 '-p', self.ports, '--pcap', ofp, str(self.startIP), str(self.endIP)))
             if masscan_done.returncode == 0:
                 logging.info('Masscan finished with return code 0.')
                 self.PARSER.start(ofp)
@@ -94,5 +94,5 @@ class MasscanControl:
                 logging.error('Masscan finished with return code {}! Scan range {} - {} likely did not complete!'.
                               format(masscan_done.returncode, str(self.startIP), str(self.endIP)))
                 export_files.exportFiles()
-                export_files.exportLogs()
+                #export_files.exportLogs()
                 self.prepNextScan()

@@ -4,25 +4,26 @@ import socket
 import struct
 import logging
 import datetime
+import sys
+sys.path.append('/home/shawn/Xerxes')
 from GLOBALS import *
 # Code to interact with Xerxes' CloudSQL Database with python code running SQL statementss
 
 # To map well-known port to the expected service when listing results
 def map_port_service(port_number):
-    global PORTS
     # Dictionary of Port Numbers and their Services
     return PORTS.get(port_number, "")
 
 # Local connection to DB, grabbing credentials from local file
 # scrapped as Google's API only allows for DB administration, not usage. have Google app connect without needing to call connect
 def connect_database():
-    with open("/home/shawn/PycharmProjects/Xerxes/Database_API/DatabaseInfo.txt") as f:
+    with open(DATABASE_INFO, 'r') as f:
         content = f.readlines()
         content = [x.strip() for x in content]
     try:
         return pymysql.connect(content[0], content[1], content[2], content[3],
-                               local_infile = 1, ssl={'cert' : 'ssl_certs/client-cert.pem',
-                                                    'key' : 'ssl_certs/client-key.pem'})
+                               local_infile = 1, ssl={'cert' : CLIENT_CERT,
+                                                    'key' : CLIENT_KEY})
     except Exception as e:
         logging.error("CRITICAL ERROR: CAN'T CONNECT TO DATABASE::REASON: {}".format(e))
         exit(-1)
@@ -202,7 +203,7 @@ def insert_into_CVE_vulnerabilities(db, CVE_id, status, description):
 
 def insert_scan_requests(db, request_id, requester, target, submission_time):
     cursor = db.cursor()
-    insertStatement = "INSERT INTO SCAN_REQUESTS (REQUEST_ID, REQUESTER, TARGET_IP, SUBMISSION_TIME) \
+    insertStatement = "INSERT INTO SCAN_REQUESTS (REQUEST_ID, REQUESTER_NAME, TARGET_IP, SUBMISSION_TIME) \
     VALUES ('%s', '%s', '%s', '%s') \
     ON DUPLICATE IGNORE" % \
                       (int(request_id), requester, target, submission_time)

@@ -2,7 +2,10 @@
 import sys
 #sys.path.insert(0,"..\\Database_API")
 #from Controller import export_files
-from Database_API import Xerxes_SQL
+import sys
+sys.path.append('/home/shawn/Xerxes')
+sys.path.append('/home/shawn/Xerxes/Database_API')
+import Xerxes_SQL
 from xml.dom import minidom
 import datetime
 import socket

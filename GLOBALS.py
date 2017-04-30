@@ -1,9 +1,8 @@
-import os
 import logging
 import google.cloud.logging
 
 
-IP_INCREMENT = 15000
+IP_INCREMENT = 30000
 TIME_INCREMENT = 15
 IPV4_INT_START = 16777216
 IPV4_INT_STOP = 4294967295
@@ -20,6 +19,8 @@ CURRENT_LOG_FILE = ''
 LOG_COUNT = 0
 OUT_DIR = BASE_DIR + '/OutFiles/'
 LOG_DIR = BASE_DIR + '/Logs'
+
+XML_OUT_COUNT = 0
 
 PROJECT_ID = 'xerxes-163204'
 BUCKET = 'xerxes-output-files'
@@ -228,8 +229,6 @@ SUCCESS = 0
 ERROR = 1
 
 def logConfig():
-    global CURRENT_LOG_FILE, LOG_COUNT
-
     logging.basicConfig(filename=LOG_DIR + '/' + 'xerxes.log', format='[%(levelname)s] %(asctime)s \
                                                 %(filename)s:%(funcName)s %(lineno)d %(message)s')
     client = google.cloud.logging.Client(PROJECT_ID)
