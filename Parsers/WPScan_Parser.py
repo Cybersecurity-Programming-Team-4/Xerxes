@@ -4,7 +4,7 @@ import os
 import logging
 import sys
 sys.path.append('/home/shawn/Xerxes/Database_API')
-import Xerxes_SQL
+from Database_API import Xerxes_SQL
 from Parsers import Masscan_Parser
 from GLOBALS import *
 
@@ -21,7 +21,6 @@ def Parse_WPScan(IP):
         db = Xerxes_SQL.connect_database()
         for line in infile:
             if line.rstrip('\n') == "[!] The remote website is up, but does not seem to be running WordPress.":
-                Xerxes_SQL.update_site_entry(db, IP, "CMS_TYPE", "None")
                 break
             if "WordPress version" in line:
                 site_name = Masscan_Parser.getHostName(IP)
@@ -32,7 +31,7 @@ def Parse_WPScan(IP):
                     Xerxes_SQL.insert_into_CMS_SITES(db, IP, site_name, "WordPress ")
             if "WordPress theme in use: " in line:
                 theme_line = line.rsplit()
-                Xerxes_SQL.insert_into_site_vulnerabilities(db, IP, "Theme",
+                Xerxes_SQL.insert_into_host_vulnerabilities(db, IP, "Theme",
                                                             theme_line[5] + " " + theme_line[7])
             if "plugins found:" in line:
                 for line in infile:
@@ -43,7 +42,7 @@ def Parse_WPScan(IP):
                             inserted_line = inserted_line + " " + plugin_line[4]
                         # Lookup to determine if identified plugin is listed as vulnerable
                         if Xerxes_SQL.CMS_extension_lookup(Xerxes_SQL.connect_database(), plugin_line[2], "WordPress"):
-                            Xerxes_SQL.insert_into_site_vulnerabilities(db, IP, "Plugin", inserted_line)
+                            Xerxes_SQL.insert_into_host_vulnerabilities(db, IP, "Plugin", inserted_line)
             Xerxes_SQL.update_scan_request(db, IP, 'Completed')
         db.close()
         os.remove(file_name)
