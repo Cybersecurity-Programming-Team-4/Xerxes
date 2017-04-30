@@ -3,20 +3,27 @@
 import logging
 import subprocess
 import time
+import datetime
 from io import StringIO
+import sys
+sys.path.append('/home/shawn/Xerxes/Database_API')
+sys.path.append('/home/shawn/Xerxes/Controller')
+sys.path.append('/home/shawn/Xerxes/Parsers')
+sys.path.append('/home/shawn/Xerxes')
 from GLOBALS import *
-from Parsers import WiresharkXML
-from Database_API import Xerxes_SQL
-from Controller import export_files
+import WiresharkXML
+import Xerxes_SQL
+import export_files
+import Masscan_Parser
 
-UNIVERSAL_FIELDS = {
-    'eth' : ['eth.src_resolved', 'eth.src'],
-    'tcp' : ['tcp.srcport'],
-    'ip' : ['ip.src', 'ip.src_host']
-}
+#UNIVERSAL_FIELDS = {
+ #   'eth' : ['eth.src_resolved', 'eth.src'],
+  #  'tcp' : ['tcp.srcport'],
+   # 'ip' : ['ip.src', 'ip.src_host']
+#}
 
-IGNORE_PROTOS = {'frame', 'geninfo', 'fake-field-wrapper', 'eth', 'ip', 'tcp'}
-DATA_ORDER = ('showname', 'show', 'value')
+#IGNORE_PROTOS = {'frame', 'geninfo', 'fake-field-wrapper', 'eth', 'ip', 'tcp'}
+#DATA_ORDER = ('showname', 'show', 'value')
 
 
 class PCAP_Parser:
@@ -35,7 +42,7 @@ class PCAP_Parser:
         self.mac_unresolved = ''
         self.mac_resolved = ''
         self.svc = ''
-        self.DATABASE = Xerxes_SQL.connect_database()
+        self.DATABASE = object()
 
     def getStreams(self):
         try:
@@ -73,7 +80,7 @@ class PCAP_Parser:
                 with open(self.xmlf, 'r') as fh:
                     WiresharkXML.parse_fh(fh, self.parsePacket)
                 # Export XML file to bucket
-                export_files.exportFile(self.xmlf, 'application/octet-stream')
+                export_files.exportFile(self.xmlf, 'text/plain')
                 if self.ip != '':
                     if self.ip not in self.IP_ADDRESS:
                         self.IP_ADDRESS.add(self.ip)
@@ -125,9 +132,24 @@ class PCAP_Parser:
             pitems = packet.get_items(p)
             for i in pitems:
                 i.dump(self.banner)
-        self.banner = XML_HEADERS + self.banner + XML_FOOTER
         if len(self.banner.getvalue()) != 0:
-            Xerxes_SQL.insert_into_site_open_services(self.DATABASE, self.ip, self.port, self.svc, self.banner.getvalue())
+            tempbanner = StringIO()
+            tempbanner.write(XML_HEADERS)
+            tempbanner.write(self.banner.getvalue())
+            tempbanner.write(XML_FOOTER)
+            Xerxes_SQL.insert_into_site_open_services(self.DATABASE, self.ip, self.port, self.svc, tempbanner.getvalue())
+            tempbanner.close()
+            if self.port == '80':
+                try:
+                    WHOIs_Response = Masscan_Parser.get_WHOIS(self.ip)
+                    region = WHOIs_Response['asn_country_code']
+                    returnedName = Masscan_Parser.getHostName(self.ip)
+                    Xerxes_SQL.insert_into_whois(self.DATABASE, self.ip, WHOIs_Response)
+                    Xerxes_SQL.insert_site_entry(self.DATABASE, self.ip, returnedName, 'IPv4', region, str(datetime.datetime.utcnow()))
+                except Exception as e:
+                    logging.error('Could not complete port 80 information gathering for {} {}'.format(self.ip, e))
+
+
 
     def genXMLFromPCAP(self, stream):
         self.xmlf = OUT_DIR + 'xerxes-tshark-out-{}.xml'.format(str(time.time()).replace('.', ''))
@@ -142,6 +164,9 @@ class PCAP_Parser:
 
     def start(self, pcap):
         try:
+            self.DATABASE = Xerxes_SQL.connect_database()
+            self.IP_ADDRESS.clear()
+            self.TCP_STREAMS.clear()
             if pcap == '':
                 raise FileNotFoundError('PCAP Filename is an exmpty string!')
             self.pcapf = pcap
@@ -150,5 +175,7 @@ class PCAP_Parser:
                 raise Exception('Could not get TCP streams!')
             else:
                 self.parseStream()
+                self.DATABASE.close()
         except Exception as e:
+            self.DATABASE.close()
             logging.error('{}'.format(e))

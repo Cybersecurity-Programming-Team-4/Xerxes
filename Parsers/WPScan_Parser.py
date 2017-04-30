@@ -2,7 +2,9 @@
 import sys
 import os
 import logging
-from Database_API import Xerxes_SQL
+import sys
+sys.path.append('/home/shawn/Xerxes/Database_API')
+import Xerxes_SQL
 from GLOBALS import *
 
 

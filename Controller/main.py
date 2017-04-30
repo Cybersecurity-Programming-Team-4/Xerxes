@@ -3,7 +3,12 @@
 import google.cloud.logging
 import logging
 import pickle
-from Controller import masscan_controller
+import sys
+sys.path.append('/home/shawn/Xerxes/Database_API')
+sys.path.append('/home/shawn/Xerxes/Controller')
+sys.path.append('/home/shawn/Xerxes')
+import masscan_controller
+import Xerxes_SQL
 from GLOBALS import *
 
 def main_nc():
@@ -37,5 +42,5 @@ def main_c():
     mc = masscan_controller.MasscanControl()
     mc.startMasscanNS()
 
-if __name__ == 'main':
+if __name__ == '__main__':
     main_c()

@@ -13,7 +13,7 @@ def select_and_run_WPScans():
         controller.start_WPScan()
 
 
-if __name__ == "__main__":
-    logging.basicConfig(filename=LOG_DIR + '/xerxes-controller.log', format='[%(levelname)s] %(asctime)s \
-                                            %(filename)s:%(funcName)s %(lineno)d %(message)s')
-    select_and_run_WPScans()
+#if __name__ == "__main__":
+ #   logging.basicConfig(filename=LOG_DIR + '/xerxes-controller.log', format='[%(levelname)s] %(asctime)s \
+  #                                          %(filename)s:%(funcName)s %(lineno)d %(message)s')
+   # select_and_run_WPScans()
