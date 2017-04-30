@@ -28,13 +28,13 @@ def connect_database():
         exit(-1)
 
 # Basic insert, expects column values to be strings.
-def insert_site_entry(db, IP_address, hostName, ipVersion, region, scanDate):
+def insert_host_entry(db, IP_address, hostName, ipVersion, region, scanDate):
     cursor = db.cursor()
-    insertStatement = "INSERT INTO SITE_INFO(IP_ADDRESS, \
-    SITE_NAME, IP_VERSION, COUNTRY, CHECKED_DATE) \
+    insertStatement = "INSERT INTO HOST_INFO(IP_ADDRESS, \
+    HOST_NAME, IP_VERSION, COUNTRY, CHECKED_DATE) \
     VALUES ('%s', '%s', '%s', '%s', '%s') \
     ON DUPLICATE KEY \
-    UPDATE IP_ADDRESS = IP_ADDRESS, SITE_NAME = SITE_NAME, IP_VERSION = IP_VERSION, COUNTRY = COUNTRY, CHECKED_DATE = CHECKED_DATE" % \
+    UPDATE IP_ADDRESS = IP_ADDRESS, HOST_NAME = HOST_NAME, IP_VERSION = IP_VERSION, COUNTRY = COUNTRY, CHECKED_DATE = CHECKED_DATE" % \
     (IP_address, hostName, ipVersion, region, scanDate)
 
     try:
@@ -42,31 +42,29 @@ def insert_site_entry(db, IP_address, hostName, ipVersion, region, scanDate):
         db.commit()
     except Exception as e:
         db.rollback()
-        logging.error("Failed to insert {} in SITE_INFO Table".format(IP_address))
-        return "[error] with insert entry", e
+        logging.error("Failed to insert {} in HOST_INFO Table: {}".format(IP_address, e))
 
-def update_site_entry(db, IP_address, field, new_value):
+def update_host_entry(db, IP_address, field, new_value):
     cursor=db.cursor()
-    update_statement = "UPDATE SITE_INFO SET %s = %s WHERE IP_ADDRESS = %s" % (IP_address, field, new_value)
+    update_statement = "UPDATE HOST_INFO SET %s = %s WHERE IP_ADDRESS = %s" % (IP_address, field, new_value)
     try:
         cursor.execute(update_statement)
         db.commit()
-    except:
+    except Exception as e:
         db.rollback()
-        logging.error("Update for {}, field = {} failed".format(IP_address, field))
+        logging.error("Update for {}, field = {} failed: <{}>".format(IP_address, field, e))
 
-def retrieve_site_entry(db, table_field, filter_field, filter_value):
+def retrieve_host_entry(db, table_field, filter_field, filter_value):
     cursor = db.cursor()
     if filter_value == "None":
-        selectStatement = "SELECT %s FROM SITE_INFO" % (table_field)
+        selectStatement = "SELECT %s FROM HOST_INFO" % (table_field)
     else:
-        selectStatement = "SELECT %s FROM SITE_INFO WHERE %s = '%s'" % (table_field, filter_field, filter_value)
+        selectStatement = "SELECT %s FROM HOST_INFO WHERE %s = '%s'" % (table_field, filter_field, filter_value)
     try:
         cursor.execute(selectStatement)
         data = cursor.fetchall()
     except Exception as e:
         db.rollback()
-        print(e)
         return  "Site not found"
     return data
 
@@ -84,8 +82,7 @@ def insert_device_entry(db, IP_address, MAC_address, vendor):
         db.commit()
     except Exception as e:
         db.rollback()
-        logging.error("Failed to insert {} in DEVICE_INFO Table".format(IP_address))
-        return "[error] with insert entry", e
+        logging.error("Failed to insert {} in DEVICE_INFO Table: <{}>".format(IP_address, e))
 
 def insert_into_whois(db, IP_address, response):
     cursor = db.cursor()
@@ -110,15 +107,15 @@ def insert_into_whois(db, IP_address, response):
         # Execute the SQL command
         cursor.execute(insertStatement)
         db.commit()
-    except:
+    except Exception as e:
         # Rollback in case there is any error
         db.rollback()
-        logging.error("Insert failed on WHOIS for IP \"{}\"".format(IP_address))
+        logging.error("Insert failed on WHOIS for IP \"{}\": <{}>".format(IP_address, e))
 
-def insert_into_site_open_services(db, IP_address, portNumber, service_name, banner):
+def insert_into_host_open_services(db, IP_address, portNumber, service_name, banner):
 
     cursor = db.cursor()
-    insertStatement = "INSERT INTO SITE_OPEN_SERVICES(IP_ADDRESS, PORT_NUMBER, SERVICE_NAME, BANNER) \
+    insertStatement = "INSERT INTO HOST_OPEN_SERVICES(IP_ADDRESS, PORT_NUMBER, SERVICE_NAME, BANNER) \
     VALUES ('%s', '%s', '%s', '%s') \
     ON DUPLICATE KEY \
     UPDATE IP_ADDRESS = IP_ADDRESS, PORT_NUMBER = PORT_NUMBER, SERVICE_NAME = SERVICE_NAME, BANNER = BANNER " % \
@@ -128,16 +125,16 @@ def insert_into_site_open_services(db, IP_address, portNumber, service_name, ban
         # Execute the SQL command
         cursor.execute(insertStatement)
         db.commit()
-    except:
+    except Exception as e:
         # Rollback in case there is any error
         db.rollback()
-        logging.error("Insert failed on OPEN_SERVICE for IP \"{}\"".format(IP_address))
+        logging.error("Insert failed on OPEN_SERVICE for IP \"{}\": <{}>".format(IP_address, e))
 
-def insert_into_site_vulnerabilities(db, IP_address, type, description):
+def insert_into_host_vulnerabilities(db, IP_address, type, description):
     cursor = db.cursor()
     # Where type is either a CVE Reference, CMS-related
     # Description is the CVE ID, or if CMS-related, something such as accessible Admin Login Page
-    insertStatement = "INSERT INTO SITE_VULNERABILITIES (IP_ADDRESS, TYPE, DESCRIPTION) \
+    insertStatement = "INSERT INTO HOST_VULNERABILITIES (IP_ADDRESS, TYPE, DESCRIPTION) \
     VALUES ('%s', '%s', '%s') \
     ON DUPLICATE KEY \
         UPDATE TYPE = TYPE, DESCRIPTION = DESCRIPTION" % \
@@ -146,20 +143,32 @@ def insert_into_site_vulnerabilities(db, IP_address, type, description):
     try:
         cursor.execute(insertStatement)
         db.commit()
-    except:
+    except Exception as e:
         db.rollback()
-        logging.error("Insert failed for {} site vulnerability: {}".format(IP_address, description))
+        logging.error("Insert failed for {} site vulnerability: {}: <{}>".format(IP_address, description, e))
 
-def retrieve_site_vulnerabilities(db, IP_Address):
+def retrieve_host_vulnerabilities(db, IP_Address):
     cursor = db.cursor()
     try:
-        cursor.execute("SELECT * FROM SITE_VULNERABILITIES WHERE IP_ADDRESS = %s", IP_Address)
-    except:
+        cursor.execute("SELECT * FROM HOST_VULNERABILITIES WHERE IP_ADDRESS = %s", IP_Address)
+    except Exception as e:
         db.rollback()
-        logging.error("Failed to retrieve vulnerabilities for {}".format(IP_Address))
+        logging.error("Failed to retrieve vulnerabilities for {}: <{}>".format(IP_Address, e))
         return None
     else:
         return cursor.fetchall()
+
+def insert_into_CMS_SITES(db, IP_address, site_name, cms_type):
+    cursor = db.cursor()
+    insertStatement = "INSERT INTO CMS_SITES (IP_ADDRESS, SITE_NAME, CMS_TYPE) \
+    VALUES ('%s', '%s', '%s')" % \
+    (IP_address, site_name, cms_type)
+    try:
+        cursor.execute(insertStatement)
+        db.commit()
+    except Exception as e:
+        logging.error("Could not create CMS entry for {}: {}".format(IP_address, e))
+        db.rollback()
 
 def insert_into_scan_history(db, start_time, end_time):
     cursor = db.cursor()
@@ -169,8 +178,8 @@ def insert_into_scan_history(db, start_time, end_time):
     try:
         cursor.execute(insertStatement)
         db.commit()
-    except:
-        logging.error("Could not record scan history for scan information from {} to {}".format(start_time, end_time))
+    except Exception as e:
+        logging.error("Could not record scan history for scan information from {} to {}: <{}>".format(start_time, end_time, e))
         db.rollback()
 
 def insert_into_CVE_vulnerabilities(db, CVE_id, status, description):
@@ -186,10 +195,10 @@ def insert_into_CVE_vulnerabilities(db, CVE_id, status, description):
         cursor.execute(insertStatement)
         # Commit your changes in the database
         db.commit()
-    except:
+    except Exception as e:
         # Rollback in case there is any error
         db.rollback()
-        logging.debug("Insert Failed on CVE Update for {}".format(CVE_id))
+        logging.debug("Insert Failed on CVE Update for {}: {}".format(CVE_id, e))
 
 def insert_scan_requests(db, request_id, requester, target, submission_time):
     cursor = db.cursor()
@@ -202,9 +211,9 @@ def insert_scan_requests(db, request_id, requester, target, submission_time):
         # Execute the SQL command
         cursor.execute(insertStatement)
         db.commit()
-    except:
+    except Exception as e:
         db.rollback()
-        logging.debug("Failed to record request from {}".format(requester))
+        logging.debug("Failed to record request from {}: <{}>".format(requester, e))
         db.close()
 
 def insert_new_user(db, username, password_hash, salt, level, API_key):
@@ -218,10 +227,10 @@ def insert_new_user(db, username, password_hash, salt, level, API_key):
         cursor.execute(insertStatement)
         # Commit your changes in the database
         db.commit()
-    except:
+    except Exception as e:
         # Rollback in case there is any error
         db.rollback()
-        logging.debug("Failed to store account for {}".format(username))
+        logging.debug("Failed to store account for {}: <{}>".format(username, e))
         db.close()
 
 def get_IP_region(db, IP_address):
@@ -255,9 +264,9 @@ def get_GEOIP_info(db, IP_address, field):
     try:
         cursor.execute(selectStatement)
         db.commit()
-    except:
+    except Exception as e:
         db.rollback()
-        logging.debug("Error fetching GEOIP Location Data")
+        logging.debug("Error fetching GEOIP Location Data {}".format(e))
         return "NULL"
     else:
         return cursor.fetchone()
@@ -275,9 +284,9 @@ def CMS_extension_lookup(db, name, cms_type):
         data = cursor.fetchall()
         # Commit your changes in the database
         db.commit()
-    except:
+    except Exception as e:
         # Rollback in case there is any error
-        logging.debug("CMS Extension lookup error")
+        logging.debug("CMS Extension lookup error".format(e))
         db.rollback()
         return False
 
@@ -292,9 +301,9 @@ def retrieve_table_entry(db, tableName, tableField, filterField, filterValue):
     try:
         cursor.execute(selectStatement)
         return cursor.fetchall()
-    except:
+    except Exception as e:
         db.rollback()
-        logging.debug("Error fetching {} data".format(tableName))
+        logging.debug("Error fetching {} data: <{}>".format(tableName, e))
         return None
 
 # Defunct as update code will just load the data in and themes and plugins have been consolidated into one table
