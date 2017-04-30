@@ -78,9 +78,9 @@ class PCAP_Parser:
                 if err != SUCCESS:
                     raise Exception('Could not generate XML from PCAP!')
                 # Export XML file to bucket
-                export_files.exportFile(self.xmlf, 'text/plain')
                 with open(self.xmlf, 'r') as fh:
                     WiresharkXML.parse_fh(fh, self.parsePacket)
+                export_files.exportFile(self.xmlf, 'text/plain')
         except Exception as e:
             logging.error('Error while parsing XML file. IP: {} TCP Stream: {} {}'.format(self.ip, s, e))
             return ERROR
